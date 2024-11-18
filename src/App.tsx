@@ -24,7 +24,8 @@ function App() {
   const [isTransferring, setIsTransferring] = useState(false);
 
   useEffect(() => {
-    const unlisten = await window.__TAURI__.event.listen<CopyProgress>(
+    const setupListener = async () => {
+      const unlisten = await window.__TAURI__.event.listen<CopyProgress>(
       'copy-progress',
       (event) => {
         const { file_name, index, total } = event.payload;
@@ -33,8 +34,14 @@ function App() {
       }
     );
 
+    };
+    
+    setupListener();
+    
     return () => {
-      unlisten.then(fn => fn());
+      // Cleanup function doesn't need to be async
+      window.__TAURI__.event.listen<CopyProgress>('copy-progress', () => {})
+        .then(unlisten => unlisten());
     };
   }, []);
 
