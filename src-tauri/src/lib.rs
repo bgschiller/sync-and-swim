@@ -7,6 +7,7 @@ use tauri::Emitter;
 pub struct AudioFile {
     name: String,
     path: String,
+    relative_path: String,
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -17,27 +18,42 @@ pub struct CopyProgress {
     total: usize,
 }
 
-#[tauri::command]
-async fn list_audio_files(path: &str) -> Result<Vec<AudioFile>, String> {
-    let dir = fs::read_dir(path).map_err(|e| e.to_string())?;
-
+fn visit_dirs(dir: &PathBuf, base_path: &PathBuf) -> Result<Vec<AudioFile>, String> {
     let mut files = Vec::new();
-    for entry in dir {
-        if let Ok(entry) = entry {
-            if let Ok(file_type) = entry.file_type() {
-                if file_type.is_file() {
-                    if let Ok(name) = entry.file_name().into_string() {
-                        // TODO: Add proper audio file extension filtering
-                        files.push(AudioFile {
-                            name,
-                            path: entry.path().to_string_lossy().to_string(),
-                        });
-                    }
+    
+    if dir.is_dir() {
+        for entry in fs::read_dir(dir).map_err(|e| e.to_string())? {
+            let entry = entry.map_err(|e| e.to_string())?;
+            let path = entry.path();
+            
+            if path.is_dir() {
+                files.extend(visit_dirs(&path, base_path)?);
+            } else if path.is_file() {
+                if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+                    // Get the relative path by stripping the base path
+                    let relative = path.strip_prefix(base_path)
+                        .map_err(|e| e.to_string())?
+                        .parent()
+                        .and_then(|p| p.to_str())
+                        .unwrap_or("")
+                        .to_string();
+                    
+                    files.push(AudioFile {
+                        name: name.to_string(),
+                        path: path.to_string_lossy().to_string(),
+                        relative_path: relative,
+                    });
                 }
             }
         }
     }
+    Ok(files)
+}
 
+#[tauri::command]
+async fn list_audio_files(path: &str) -> Result<Vec<AudioFile>, String> {
+    let base_path = PathBuf::from(path);
+    let mut files = visit_dirs(&base_path, &base_path)?;
     files.sort_by(|a, b| a.name.cmp(&b.name));
     Ok(files)
 }
@@ -66,9 +82,15 @@ async fn copy_files(
 
         // Perform the blocking copy
         let src_path = PathBuf::from(&file.path);
-        let file_name = src_path.file_name().ok_or("Invalid file name")?;
-        let dest_file = PathBuf::from(dest_path).join(file_name);
-
+        let mut dest_file = PathBuf::from(dest_path);
+        
+        // Create subdirectory if relative_path is not empty
+        if !file.relative_path.is_empty() {
+            dest_file = dest_file.join(&file.relative_path);
+            fs::create_dir_all(&dest_file).map_err(|e| e.to_string())?;
+        }
+        
+        dest_file = dest_file.join(&file.name);
         fs::copy(&src_path, &dest_file)
             .map_err(|e| format!("Failed to copy {}: {}", file.name, e))?;
 
