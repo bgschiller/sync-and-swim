@@ -123,6 +123,12 @@ function App() {
             <div className="progress">
               <p>Copying: {currentFile}</p>
               <p>Progress: {progress}%</p>
+              <div className="progress-bar">
+                <div 
+                  className="progress-bar-fill" 
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
             </div>
           )}
         </div>
