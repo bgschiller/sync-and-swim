@@ -112,7 +112,7 @@ function FileTransfer() {
           <ul>
             {files.map((file, index) => (
               <li key={file.path}>
-                {index + 1}. {file.name}
+                {index + 1}. {file.relative_path ? `${file.relative_path}/` : ''}{file.name}
               </li>
             ))}
           </ul>
