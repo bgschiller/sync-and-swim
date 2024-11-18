@@ -8,8 +8,6 @@ function App() {
 
   return (
     <main className="container">
-      <h1>OpenSwim Audio Tools</h1>
-
       <div className="tabs">
         <button 
           className={`tab ${activeTab === 'transfer' ? 'active' : ''}`}

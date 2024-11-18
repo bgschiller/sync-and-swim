@@ -140,9 +140,12 @@ button {
 .tabs {
   display: flex;
   gap: 1rem;
-  margin-bottom: 2rem;
   border-bottom: 2px solid var(--border-color);
-  padding-bottom: 0.5rem;
+  padding: 1rem;
+  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .tab {
@@ -167,7 +170,7 @@ button {
 }
 
 .tab-content {
-  padding-top: 1rem;
+  padding: 2rem 1rem;
 }
 
 h1 {
