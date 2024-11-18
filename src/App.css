@@ -218,16 +218,51 @@ button:disabled {
   list-style: none;
   padding: 0;
   margin: 0 0 1.5rem 0;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
 }
 
 .file-list li {
   padding: 0.5rem;
   border-bottom: 1px solid var(--border-color);
   color: var(--text-color);
+  text-align: left;
 }
 
 .file-list li:last-child {
   border-bottom: none;
+}
+
+.directory-header {
+  cursor: pointer;
+  padding: 0.5rem;
+  background-color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.directory-header:hover {
+  background-color: #e2e8f0;
+}
+
+.directory-files {
+  padding-left: 1.5rem;
+}
+
+.directory-toggle {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  line-height: 20px;
+  transition: transform 0.2s;
+}
+
+.directory-toggle.expanded {
+  transform: rotate(90deg);
 }
 
 .progress {

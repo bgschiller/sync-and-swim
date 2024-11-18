@@ -9,6 +9,10 @@ interface AudioFile {
   relative_path: string;  // Path relative to source directory
 }
 
+interface DirectoryStructure {
+  [key: string]: AudioFile[];
+}
+
 interface CopyProgress {
   file_name: string;
   completed: boolean;
@@ -20,6 +24,7 @@ function FileTransfer() {
   const [sourceDir, setSourceDir] = useState<string>("");
   const [destDir, setDestDir] = useState<string>("");
   const [files, setFiles] = useState<AudioFile[]>([]);
+  const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set(['']));
   const [currentFile, setCurrentFile] = useState<string>("");
   const [progress, setProgress] = useState<number>(0);
   const [isTransferring, setIsTransferring] = useState(false);
@@ -110,9 +115,49 @@ function FileTransfer() {
         <div className="file-list">
           <h2>Files to Transfer:</h2>
           <ul>
-            {files.map((file, index) => (
-              <li key={file.path}>
-                {index + 1}. {file.relative_path ? `${file.relative_path}/` : ''}{file.name}
+            {Object.entries(files.reduce<DirectoryStructure>((acc, file) => {
+              const dir = file.relative_path || '';
+              if (!acc[dir]) acc[dir] = [];
+              acc[dir].push(file);
+              return acc;
+            }, {})).map(([dir, dirFiles]) => (
+              <li key={dir}>
+                {dir ? (
+                  <>
+                    <div 
+                      className="directory-header"
+                      onClick={() => setExpandedDirs(prev => {
+                        const next = new Set(prev);
+                        if (next.has(dir)) {
+                          next.delete(dir);
+                        } else {
+                          next.add(dir);
+                        }
+                        return next;
+                      })}
+                    >
+                      <span className={`directory-toggle ${expandedDirs.has(dir) ? 'expanded' : ''}`}>
+                        ▶
+                      </span>
+                      {dir}/
+                    </div>
+                    {expandedDirs.has(dir) && (
+                      <ul className="directory-files">
+                        {dirFiles.map((file, index) => (
+                          <li key={file.path}>
+                            {file.name}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </>
+                ) : (
+                  dirFiles.map((file, index) => (
+                    <li key={file.path}>
+                      {file.name}
+                    </li>
+                  ))
+                )}
               </li>
             ))}
           </ul>
