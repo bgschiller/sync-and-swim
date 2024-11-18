@@ -6,6 +6,7 @@ import { listen } from '@tauri-apps/api/event';
 interface AudioFile {
   name: string;
   path: string;
+  relative_path: string;  // Path relative to source directory
 }
 
 interface CopyProgress {
