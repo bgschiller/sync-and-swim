@@ -8,10 +8,35 @@ interface AudioFile {
   path: string;
 }
 
+interface CopyProgress {
+  file_name: string;
+  completed: boolean;
+  index: number;
+  total: number;
+}
+
 function App() {
   const [sourceDir, setSourceDir] = useState<string>("");
   const [destDir, setDestDir] = useState<string>("");
   const [files, setFiles] = useState<AudioFile[]>([]);
+  const [currentFile, setCurrentFile] = useState<string>("");
+  const [progress, setProgress] = useState<number>(0);
+  const [isTransferring, setIsTransferring] = useState(false);
+
+  useEffect(() => {
+    const unlisten = await window.__TAURI__.event.listen<CopyProgress>(
+      'copy-progress',
+      (event) => {
+        const { file_name, index, total } = event.payload;
+        setCurrentFile(file_name);
+        setProgress(Math.round((index + 1) * 100 / total));
+      }
+    );
+
+    return () => {
+      unlisten.then(fn => fn());
+    };
+  }, []);
 
   async function selectSourceDir() {
     const selected = await open({
@@ -52,10 +77,15 @@ function App() {
       return;
     }
     try {
+      setIsTransferring(true);
       await invoke("copy_files", { files, destPath: destDir });
       alert("Files transferred successfully!");
     } catch (error) {
       alert(`Transfer failed: ${error}`);
+    } finally {
+      setIsTransferring(false);
+      setProgress(0);
+      setCurrentFile("");
     }
   }
 
@@ -84,10 +114,17 @@ function App() {
           </ul>
           <button 
             onClick={handleTransfer}
-            disabled={!destDir}
+            disabled={!destDir || isTransferring}
           >
-            Transfer Files
+            {isTransferring ? 'Transferring...' : 'Transfer Files'}
           </button>
+
+          {isTransferring && (
+            <div className="progress">
+              <p>Copying: {currentFile}</p>
+              <p>Progress: {progress}%</p>
+            </div>
+          )}
         </div>
       )}
     </main>
