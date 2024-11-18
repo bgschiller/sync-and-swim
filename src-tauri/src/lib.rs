@@ -54,7 +54,16 @@ fn visit_dirs(dir: &PathBuf, base_path: &PathBuf) -> Result<Vec<AudioFile>, Stri
 async fn list_audio_files(path: &str) -> Result<Vec<AudioFile>, String> {
     let base_path = PathBuf::from(path);
     let mut files = visit_dirs(&base_path, &base_path)?;
-    files.sort_by(|a, b| a.name.cmp(&b.name));
+    files.sort_by(|a, b| {
+        // First compare by relative path
+        let path_cmp = a.relative_path.cmp(&b.relative_path);
+        if path_cmp == std::cmp::Ordering::Equal {
+            // If paths are equal, compare by name
+            a.name.cmp(&b.name)
+        } else {
+            path_cmp
+        }
+    });
     Ok(files)
 }
 
