@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
+import { listen } from '@tauri-apps/api/event';
 import "./App.css";
 
 interface AudioFile {
@@ -25,7 +26,7 @@ function App() {
 
   useEffect(() => {
     const setupListener = async () => {
-      const unlisten = await window.__TAURI__.event.listen<CopyProgress>(
+      const unlisten = await listen<CopyProgress>(
       'copy-progress',
       (event) => {
         const { file_name, index, total } = event.payload;
@@ -40,7 +41,7 @@ function App() {
     
     return () => {
       // Cleanup function doesn't need to be async
-      window.__TAURI__.event.listen<CopyProgress>('copy-progress', () => {})
+      listen<CopyProgress>('copy-progress', () => {})
         .then(unlisten => unlisten());
     };
   }, []);
