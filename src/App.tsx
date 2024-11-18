@@ -1,49 +1,95 @@
 import { useState } from "react";
-import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/core";
+import { open } from "@tauri-apps/plugin-dialog";
 import "./App.css";
 
-function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+interface AudioFile {
+  name: string;
+  path: string;
+}
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
+function App() {
+  const [sourceDir, setSourceDir] = useState<string>("");
+  const [destDir, setDestDir] = useState<string>("");
+  const [files, setFiles] = useState<AudioFile[]>([]);
+
+  async function selectSourceDir() {
+    const selected = await open({
+      directory: true,
+      multiple: false,
+      title: "Select Source Directory"
+    });
+    if (selected && !Array.isArray(selected)) {
+      setSourceDir(selected);
+      const audioFiles = await invoke<AudioFile[]>("list_audio_files", { path: selected });
+      setFiles(audioFiles);
+    }
+  }
+
+  async function selectDestDir() {
+    const selected = await open({
+      directory: true,
+      multiple: false,
+      title: "Select Destination Directory"
+    });
+    if (selected && !Array.isArray(selected)) {
+      setDestDir(selected);
+    }
+  }
+
+  function shuffleFiles() {
+    const shuffled = [...files];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    setFiles(shuffled);
+  }
+
+  async function handleTransfer() {
+    if (!destDir) {
+      alert("Please select a destination directory");
+      return;
+    }
+    try {
+      await invoke("copy_files", { files, destPath: destDir });
+      alert("Files transferred successfully!");
+    } catch (error) {
+      alert(`Transfer failed: ${error}`);
+    }
   }
 
   return (
     <main className="container">
-      <h1>Welcome to Tauri + React</h1>
+      <h1>OpenSwim File Transfer</h1>
 
-      <div className="row">
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <div className="controls">
+        <button onClick={selectSourceDir}>Select Source Folder</button>
+        {files.length > 0 && <button onClick={shuffleFiles}>Shuffle Files</button>}
+        <button onClick={selectDestDir}>Select Destination Folder</button>
       </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
 
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
+      {sourceDir && <p>Source: {sourceDir}</p>}
+      {destDir && <p>Destination: {destDir}</p>}
+
+      {files.length > 0 && (
+        <div className="file-list">
+          <h2>Files to Transfer:</h2>
+          <ul>
+            {files.map((file, index) => (
+              <li key={file.path}>
+                {index + 1}. {file.name}
+              </li>
+            ))}
+          </ul>
+          <button 
+            onClick={handleTransfer}
+            disabled={!destDir}
+          >
+            Transfer Files
+          </button>
+        </div>
+      )}
     </main>
   );
 }
