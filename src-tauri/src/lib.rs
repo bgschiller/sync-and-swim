@@ -30,6 +30,10 @@ fn visit_dirs(dir: &PathBuf, base_path: &PathBuf) -> Result<Vec<AudioFile>, Stri
                 files.extend(visit_dirs(&path, base_path)?);
             } else if path.is_file() {
                 if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+                    // Skip .DS_Store files
+                    if name == ".DS_Store" {
+                        continue;
+                    }
                     // Get the relative path by stripping the base path
                     let relative = path.strip_prefix(base_path)
                         .map_err(|e| e.to_string())?
