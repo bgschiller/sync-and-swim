@@ -260,6 +260,10 @@ button:disabled {
   font-size: 0.875rem;
   background-color: #e2e8f0;
   color: var(--text-color);
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .shuffle-button:hover {
