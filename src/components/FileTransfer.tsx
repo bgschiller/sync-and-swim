@@ -173,6 +173,7 @@ function FileTransfer() {
                         onClick={(e) => {
                           e.stopPropagation();
                           toggleDirectoryOrder(dir);
+                          setExpandedDirs(prev => new Set(prev).add(dir));
                         }}
                       >
                         {shuffledDirs.has(dir) ? '↕️ Sort' : '🔀 Shuffle'}
