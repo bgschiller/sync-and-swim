@@ -55,6 +55,35 @@ fn visit_dirs(dir: &PathBuf, base_path: &PathBuf) -> Result<Vec<AudioFile>, Stri
 }
 
 #[tauri::command]
+async fn list_directory_files(path: &str) -> Result<Vec<AudioFile>, String> {
+    let dir = PathBuf::from(path);
+    let mut files = Vec::new();
+    
+    if dir.is_dir() {
+        for entry in fs::read_dir(&dir).map_err(|e| e.to_string())? {
+            let entry = entry.map_err(|e| e.to_string())?;
+            let path = entry.path();
+            
+            if path.is_file() {
+                if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+                    if name == ".DS_Store" {
+                        continue;
+                    }
+                    files.push(AudioFile {
+                        name: name.to_string(),
+                        path: path.to_string_lossy().to_string(),
+                        relative_path: String::new(), // No subdirs for this function
+                    });
+                }
+            }
+        }
+    }
+    
+    files.sort_by(|a, b| a.name.cmp(&b.name));
+    Ok(files)
+}
+
+#[tauri::command]
 async fn list_audio_files(path: &str) -> Result<Vec<AudioFile>, String> {
     let base_path = PathBuf::from(path);
     let mut files = visit_dirs(&base_path, &base_path)?;
@@ -131,7 +160,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![list_audio_files, copy_files,])
+        .invoke_handler(tauri::generate_handler![list_audio_files, copy_files, list_directory_files,])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
