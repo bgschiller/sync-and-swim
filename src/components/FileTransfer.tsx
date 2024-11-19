@@ -199,13 +199,6 @@ function FileTransfer() {
               </li>
             ))}
           </ul>
-          <button 
-            onClick={handleTransfer}
-            disabled={!destDir || isTransferring}
-          >
-            {isTransferring ? 'Transferring...' : 'Transfer Files'}
-          </button>
-
           {isTransferring && (
             <div className="progress">
               <p>Copying: {currentFile}</p>
@@ -218,6 +211,13 @@ function FileTransfer() {
               </div>
             </div>
           )}
+
+          <button 
+            onClick={handleTransfer}
+            disabled={!destDir || isTransferring}
+          >
+            {isTransferring ? 'Transferring...' : 'Transfer Files'}
+          </button>
         </div>
       )}
     </div>
