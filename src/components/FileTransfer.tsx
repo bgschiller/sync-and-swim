@@ -73,13 +73,20 @@ function FileTransfer() {
     }
   }
 
-  function shuffleFiles() {
-    const shuffled = [...files];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    setFiles(shuffled);
+  function shuffleDirectoryFiles(dirPath: string) {
+    setFiles(prevFiles => {
+      const newFiles = [...prevFiles];
+      const dirFiles = newFiles.filter(f => f.relative_path === dirPath);
+      const otherFiles = newFiles.filter(f => f.relative_path !== dirPath);
+      
+      // Shuffle only the files in this directory
+      for (let i = dirFiles.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [dirFiles[i], dirFiles[j]] = [dirFiles[j], dirFiles[i]];
+      }
+      
+      return [...otherFiles, ...dirFiles];
+    });
   }
 
   async function handleTransfer() {
@@ -104,7 +111,6 @@ function FileTransfer() {
     <div>
       <div className="controls">
         <button onClick={selectSourceDir}>Select Source Folder</button>
-        {files.length > 0 && <button onClick={shuffleFiles}>Shuffle Files</button>}
         <button onClick={selectDestDir}>Select Destination Folder</button>
       </div>
 
@@ -124,22 +130,33 @@ function FileTransfer() {
               <li key={dir}>
                 {dir ? (
                   <>
-                    <div 
-                      className="directory-header"
-                      onClick={() => setExpandedDirs(prev => {
-                        const next = new Set(prev);
-                        if (next.has(dir)) {
-                          next.delete(dir);
-                        } else {
-                          next.add(dir);
-                        }
-                        return next;
-                      })}
-                    >
-                      <span className={`directory-toggle ${expandedDirs.has(dir) ? 'expanded' : ''}`}>
-                        ▶
-                      </span>
-                      {dir}/
+                    <div className="directory-header">
+                      <div 
+                        className="directory-title"
+                        onClick={() => setExpandedDirs(prev => {
+                          const next = new Set(prev);
+                          if (next.has(dir)) {
+                            next.delete(dir);
+                          } else {
+                            next.add(dir);
+                          }
+                          return next;
+                        })}
+                      >
+                        <span className={`directory-toggle ${expandedDirs.has(dir) ? 'expanded' : ''}`}>
+                          ▶
+                        </span>
+                        {dir}/
+                      </div>
+                      <button 
+                        className="shuffle-button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          shuffleDirectoryFiles(dir);
+                        }}
+                      >
+                        🔀 Shuffle
+                      </button>
                     </div>
                     {expandedDirs.has(dir) && (
                       <ul className="directory-files">

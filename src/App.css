@@ -242,12 +242,29 @@ button:disabled {
 }
 
 .directory-header {
-  cursor: pointer;
   padding: 0.5rem;
   background-color: #f1f5f9;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+}
+
+.directory-title {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
   gap: 0.5rem;
+}
+
+.shuffle-button {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  background-color: #e2e8f0;
+  color: var(--text-color);
+}
+
+.shuffle-button:hover {
+  background-color: #cbd5e1;
 }
 
 .directory-header:hover {
