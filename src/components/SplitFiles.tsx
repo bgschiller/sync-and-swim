@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { open } from '@tauri-apps/api/dialog';
+import { dialog } from '@tauri-apps/api';
 import { invoke } from '@tauri-apps/api/tauri';
 
 interface AudioFile {
@@ -13,7 +13,7 @@ function SplitFiles() {
   const [files, setFiles] = useState<AudioFile[]>([]);
 
   const handleSelectSource = async () => {
-    const selected = await open({
+    const selected = await dialog.open({
       directory: true,
       multiple: false,
       title: 'Select Source Directory'
