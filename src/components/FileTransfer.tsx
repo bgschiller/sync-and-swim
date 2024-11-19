@@ -25,6 +25,7 @@ function FileTransfer() {
   const [destDir, setDestDir] = useState<string>("");
   const [files, setFiles] = useState<AudioFile[]>([]);
   const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set(['']));
+  const [shuffledDirs, setShuffledDirs] = useState<Set<string>>(new Set());
   const [currentFile, setCurrentFile] = useState<string>("");
   const [progress, setProgress] = useState<number>(0);
   const [isTransferring, setIsTransferring] = useState(false);
@@ -73,7 +74,7 @@ function FileTransfer() {
     }
   }
 
-  function shuffleDirectoryFiles(dirPath: string) {
+  function toggleDirectoryOrder(dirPath: string) {
     setFiles(prevFiles => {
       // Create a map to maintain directory order
       const filesByDir = prevFiles.reduce<Record<string, AudioFile[]>>((acc, file) => {
@@ -83,12 +84,23 @@ function FileTransfer() {
         return acc;
       }, {});
       
-      // Only shuffle the specified directory
       if (filesByDir[dirPath]) {
         const dirFiles = filesByDir[dirPath];
-        for (let i = dirFiles.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [dirFiles[i], dirFiles[j]] = [dirFiles[j], dirFiles[i]];
+        if (shuffledDirs.has(dirPath)) {
+          // Sort alphabetically
+          dirFiles.sort((a, b) => a.name.localeCompare(b.name));
+          setShuffledDirs(prev => {
+            const next = new Set(prev);
+            next.delete(dirPath);
+            return next;
+          });
+        } else {
+          // Shuffle
+          for (let i = dirFiles.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [dirFiles[i], dirFiles[j]] = [dirFiles[j], dirFiles[i]];
+          }
+          setShuffledDirs(prev => new Set(prev).add(dirPath));
         }
       }
       
@@ -160,10 +172,10 @@ function FileTransfer() {
                         className="shuffle-button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          shuffleDirectoryFiles(dir);
+                          toggleDirectoryOrder(dir);
                         }}
                       >
-                        🔀 Shuffle
+                        {shuffledDirs.has(dir) ? '↕️ Sort' : '🔀 Shuffle'}
                       </button>
                     </div>
                     {expandedDirs.has(dir) && (
