@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { dialog } from '@tauri-apps/api';
-import { invoke } from '@tauri-apps/api';
+import { dialog, invoke } from '@tauri-apps/api';
 
 interface AudioFile {
   name: string;
