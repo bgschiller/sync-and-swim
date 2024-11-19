@@ -75,17 +75,25 @@ function FileTransfer() {
 
   function shuffleDirectoryFiles(dirPath: string) {
     setFiles(prevFiles => {
-      const newFiles = [...prevFiles];
-      const dirFiles = newFiles.filter(f => f.relative_path === dirPath);
-      const otherFiles = newFiles.filter(f => f.relative_path !== dirPath);
+      // Create a map to maintain directory order
+      const filesByDir = prevFiles.reduce<Record<string, AudioFile[]>>((acc, file) => {
+        const dir = file.relative_path;
+        if (!acc[dir]) acc[dir] = [];
+        acc[dir].push(file);
+        return acc;
+      }, {});
       
-      // Shuffle only the files in this directory
-      for (let i = dirFiles.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [dirFiles[i], dirFiles[j]] = [dirFiles[j], dirFiles[i]];
+      // Only shuffle the specified directory
+      if (filesByDir[dirPath]) {
+        const dirFiles = filesByDir[dirPath];
+        for (let i = dirFiles.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [dirFiles[i], dirFiles[j]] = [dirFiles[j], dirFiles[i]];
+        }
       }
       
-      return [...otherFiles, ...dirFiles];
+      // Flatten back to array while maintaining directory order
+      return Object.values(filesByDir).flat();
     });
   }
 
