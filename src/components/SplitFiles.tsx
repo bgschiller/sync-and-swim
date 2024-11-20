@@ -12,6 +12,7 @@ function SplitFiles() {
   const [sourceDir, setSourceDir] = useState<string>("");
   const [destDir, setDestDir] = useState<string>("");
   const [files, setFiles] = useState<AudioFile[]>([]);
+  const [chunkMinutes, setChunkMinutes] = useState<number>(3);
 
   const handleSelectSource = async () => {
     const selected = await open({
@@ -37,6 +38,18 @@ function SplitFiles() {
         <div>
           <button onClick={handleSelectSource}>Select Source Directory</button>
           {sourceDir && <p>Source: {sourceDir}</p>}
+        </div>
+        <div className="chunk-duration">
+          <label>
+            Chunk Duration (minutes):
+            <input
+              type="number"
+              min="1"
+              step="1"
+              value={chunkMinutes}
+              onChange={(e) => setChunkMinutes(Math.max(1, parseInt(e.target.value) || 1))}
+            />
+          </label>
         </div>
         <div>
           <button onClick={async () => {
