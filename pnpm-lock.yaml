@@ -6,7 +6,7 @@ settings:
 
 dependencies:
   '@tauri-apps/api':
-    specifier: ^2
+    specifier: ^2.1.1
     version: 2.1.1
   '@tauri-apps/plugin-dialog':
     specifier: ^2.0.1
