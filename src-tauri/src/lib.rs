@@ -101,6 +101,24 @@ async fn list_audio_files(path: &str) -> Result<Vec<AudioFile>, String> {
 }
 
 #[tauri::command]
+async fn split_audio_files(
+    files: Vec<AudioFile>,
+    dest_path: &str,
+    chunk_minutes: u32,
+    window: tauri::Window,
+) -> Result<(), String> {
+    // TODO: Implement audio file splitting logic
+    // This is a placeholder that just logs the request
+    println!(
+        "Splitting {} files into {}-minute chunks to {}",
+        files.len(),
+        chunk_minutes,
+        dest_path
+    );
+    Ok(())
+}
+
+#[tauri::command]
 async fn copy_files(
     files: Vec<AudioFile>,
     dest_path: &str,
@@ -160,7 +178,12 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![list_audio_files, copy_files, list_directory_files,])
+        .invoke_handler(tauri::generate_handler![
+            list_audio_files,
+            copy_files,
+            list_directory_files,
+            split_audio_files,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

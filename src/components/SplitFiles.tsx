@@ -77,6 +77,26 @@ function SplitFiles() {
           <p>No files selected</p>
         )}
       </div>
+
+      {sourceDir && destDir && files.length > 0 && (
+        <div className="split-actions">
+          <button
+            onClick={async () => {
+              try {
+                await invoke("split_audio_files", {
+                  files,
+                  destPath: destDir,
+                  chunkMinutes,
+                });
+              } catch (error) {
+                console.error("Failed to split files:", error);
+              }
+            }}
+          >
+            Split Files
+          </button>
+        </div>
+      )}
     </div>
   );
 }
