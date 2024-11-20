@@ -32,7 +32,7 @@ function FileTransfer() {
 
   useEffect(() => {
     const setupListener = async () => {
-      const unlisten = await listen<CopyProgress>(
+      await listen<CopyProgress>(
       'copy-progress',
       (event) => {
         const { file_name, index, total } = event.payload;
@@ -181,7 +181,7 @@ function FileTransfer() {
                     </div>
                     {expandedDirs.has(dir) && (
                       <ul className="directory-files">
-                        {dirFiles.map((file, index) => (
+                        {dirFiles.map((file) => (
                           <li key={file.path}>
                             {file.name}
                           </li>
@@ -190,7 +190,7 @@ function FileTransfer() {
                     )}
                   </>
                 ) : (
-                  dirFiles.map((file, index) => (
+                  dirFiles.map((file) => (
                     <li key={file.path}>
                       {file.name}
                     </li>
