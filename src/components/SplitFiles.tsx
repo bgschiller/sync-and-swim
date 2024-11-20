@@ -10,6 +10,7 @@ interface AudioFile {
 
 function SplitFiles() {
   const [sourceDir, setSourceDir] = useState<string>("");
+  const [destDir, setDestDir] = useState<string>("");
   const [files, setFiles] = useState<AudioFile[]>([]);
 
   const handleSelectSource = async () => {
@@ -33,8 +34,23 @@ function SplitFiles() {
       <h2>Split Long Files</h2>
 
       <div className="directory-selection">
-        <button onClick={handleSelectSource}>Select Source Directory</button>
-        {sourceDir && <p>Selected: {sourceDir}</p>}
+        <div>
+          <button onClick={handleSelectSource}>Select Source Directory</button>
+          {sourceDir && <p>Source: {sourceDir}</p>}
+        </div>
+        <div>
+          <button onClick={async () => {
+            const selected = await open({
+              directory: true,
+              multiple: false,
+              title: "Select Destination Directory",
+            });
+            if (selected && typeof selected === "string") {
+              setDestDir(selected);
+            }
+          }}>Select Destination Directory</button>
+          {destDir && <p>Destination: {destDir}</p>}
+        </div>
       </div>
 
       <div className="file-list">
