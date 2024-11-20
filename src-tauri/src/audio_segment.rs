@@ -70,7 +70,7 @@ fn segment_audio(input_filename: &str, output_template: &str, segment_time: i32)
 
             // Create output stream
             let mut out_stream = output_ctx.new_stream();
-            out_stream.set_codecpar(codecpar);
+            out_stream.set_codecpar(&codecpar.clone());
             out_stream.set_time_base(ra(1, input_stream.time_base.den));
 
             // Write header
