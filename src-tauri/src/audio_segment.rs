@@ -19,7 +19,7 @@ fn segment_audio(input_filename: &str, output_template: &str, segment_time: i32)
         .context("No audio stream found")?;
 
     let codecpar = input_ctx.streams()[audio_stream_index].codecpar().clone();
-    let time_base = input_ctx.streams()[audio_stream_index].time_base();
+    let time_base = input_ctx.streams()[audio_stream_index].time_base;
 
     // Find decoder
     let decoder = AVCodec::find_decoder(codecpar.codec_id).context("Failed to find decoder")?;
