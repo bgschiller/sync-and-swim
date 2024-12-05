@@ -43,7 +43,7 @@ fn segment_audio(input_filename: &str, output_template: &str, segment_time: i32)
 
     // Packet reading loop
     loop {
-        let packet = match input_ctx.read_packet() {
+        let mut packet = match input_ctx.read_packet() {
             Ok(Some(packet)) if packet.stream_index as usize == audio_stream_index => packet,
             Ok(Some(_)) => continue, // Skip non-audio packets
             Ok(None) => break,       // End of file
@@ -82,7 +82,7 @@ fn segment_audio(input_filename: &str, output_template: &str, segment_time: i32)
 
         // Write packet to current output
         if let Some(ctx) = current_output_ctx.as_mut() {
-            ctx.interleaved_write_frame(&packet)?;
+            ctx.interleaved_write_frame(&mut packet)?;
         }
     }
 
