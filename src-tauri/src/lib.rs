@@ -107,7 +107,7 @@ async fn split_audio_files(
     files: Vec<AudioFile>,
     dest_path: &str,
     chunk_minutes: u32,
-    window: tauri::Window,
+    _window: tauri::Window,
 ) -> Result<(), String> {
     // TODO: Implement audio file splitting logic
     // This is a placeholder that just logs the request
