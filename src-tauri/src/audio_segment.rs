@@ -57,11 +57,9 @@ fn segment_audio(input_filename: &str, output_template: &str, segment_time: i32)
             // Create new output filename
             let output_filename =
                 output_template.replace("%04d", &format!("{:04}", segment_number));
-            let output_cstr = CString::new(output_filename)?;
-
             // Create new output context
             let mut output_ctx = AVFormatContextOutput::create(
-                &CString::new(output_filename)?, 
+                &CString::new(&output_filename)?,
                 None
             )?;
 
