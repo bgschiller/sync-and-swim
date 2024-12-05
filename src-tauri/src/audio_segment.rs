@@ -1,20 +1,14 @@
 use anyhow::{Context, Result};
-use cstr::cstr;
 use rsmpeg::{
     avcodec::{AVCodec, AVCodecContext},
     avformat::{AVFormatContextInput, AVFormatContextOutput},
     avutil::ra,
-    ffi,
 };
 use std::ffi::CString;
 
 fn segment_audio(input_filename: &str, output_template: &str, segment_time: i32) -> Result<()> {
-    // Convert input filename to CString
-    let input_cstr = CString::new(input_filename)?;
-    let output_template_cstr = CString::new(output_template)?;
-
     // Open input file
-    let mut input_ctx = AVFormatContextInput::open(&input_cstr, None, &mut None)
+    let mut input_ctx = AVFormatContextInput::open(&CString::new(input_filename)?, None, &mut None)
         .context("Failed to open input file")?;
 
     // Find the first audio stream
@@ -24,8 +18,8 @@ fn segment_audio(input_filename: &str, output_template: &str, segment_time: i32)
         .position(|stream| stream.codecpar().codec_type().is_audio())
         .context("No audio stream found")?;
 
-    let input_stream = input_ctx.streams()[audio_stream_index];
-    let codecpar = input_stream.codecpar();
+    let codecpar = input_ctx.streams()[audio_stream_index].codecpar().clone();
+    let time_base = input_ctx.streams()[audio_stream_index].time_base();
 
     // Find decoder
     let decoder = AVCodec::find_decoder(codecpar.codec_id).context("Failed to find decoder")?;
@@ -52,7 +46,7 @@ fn segment_audio(input_filename: &str, output_template: &str, segment_time: i32)
 
         // Check if we need to start a new segment
         if current_output_ctx.is_none()
-            || packet.pts * input_stream.time_base.num as i64 / input_stream.time_base.den as i64
+            || packet.pts * time_base.num as i64 / time_base.den as i64
                 >= segment_time as i64 * (segment_number + 1)
         {
             // Close previous output context if exists
@@ -66,16 +60,20 @@ fn segment_audio(input_filename: &str, output_template: &str, segment_time: i32)
             let output_cstr = CString::new(output_filename)?;
 
             // Create new output context
-            let mut output_ctx = AVFormatContextOutput::create(&output_cstr, None)?;
+            let mut output_ctx = AVFormatContextOutput::create(
+                &CString::new(output_filename)?, 
+                None
+            )?;
 
-            // Create output stream
-            let mut out_stream = output_ctx.new_stream();
-            out_stream.set_codecpar(codecpar.clone());
-            out_stream.set_time_base(ra(1, input_stream.time_base.den));
+            {
+                // Create output stream in its own scope
+                let mut out_stream = output_ctx.new_stream();
+                out_stream.set_codecpar(codecpar.clone());
+                out_stream.set_time_base(ra(1, time_base.den));
+            }
 
-            // Write header
+            // Write header after stream is dropped
             output_ctx.write_header(&mut None)?;
-
             current_output_ctx = Some(output_ctx);
             segment_number += 1;
         }
