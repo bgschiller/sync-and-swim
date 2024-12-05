@@ -8,7 +8,7 @@ use std::ffi::CString;
 
 fn segment_audio(input_filename: &str, output_template: &str, segment_time: i32) -> Result<()> {
     // Open input file
-    let mut input_ctx = AVFormatContextInput::open(&CString::new(input_filename)?, None, &mut None)
+    let mut input_ctx = AVFormatContextInput::open(&CString::new(input_filename.to_string())?, None, &mut None)
         .context("Failed to open input file")?;
 
     // Find the first audio stream
@@ -59,7 +59,7 @@ fn segment_audio(input_filename: &str, output_template: &str, segment_time: i32)
                 output_template.replace("%04d", &format!("{:04}", segment_number));
             // Create new output context
             let mut output_ctx = AVFormatContextOutput::create(
-                &CString::new(&output_filename)?,
+                &CString::new(output_filename)?,
                 None
             )?;
 
