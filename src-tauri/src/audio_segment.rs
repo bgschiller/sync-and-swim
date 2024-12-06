@@ -6,7 +6,12 @@ use rsmpeg::{
 };
 use std::ffi::CString;
 
-fn segment_audio(input_filename: &str, output_template: &str, segment_time: i32) -> Result<()> {
+use std::path::Path;
+use std::fs;
+
+fn segment_audio(input_filename: &str, output_folder: &str, segment_time: i32) -> Result<()> {
+    // Ensure output directory exists
+    fs::create_dir_all(output_folder)?;
     // Open input file
     let mut input_ctx = AVFormatContextInput::open(&CString::new(input_filename.to_string())?, None, &mut None)
         .context("Failed to open input file")?;
@@ -54,9 +59,19 @@ fn segment_audio(input_filename: &str, output_template: &str, segment_time: i32)
                 ctx.write_trailer()?;
             }
 
+            // Get input filename without path and extension
+            let input_name = Path::new(input_filename)
+                .file_stem()
+                .and_then(|s| s.to_str())
+                .context("Invalid input filename")?;
+            
             // Create new output filename
-            let output_filename =
-                output_template.replace("%04d", &format!("{:04}", segment_number));
+            let output_filename = format!(
+                "{}/{}_part_{:04}.mp3",
+                output_folder,
+                input_name,
+                segment_number
+            );
             // Create new output context
             let mut output_ctx = AVFormatContextOutput::create(
                 &CString::new(output_filename)?,
