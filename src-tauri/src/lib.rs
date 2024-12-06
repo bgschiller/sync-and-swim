@@ -109,15 +109,40 @@ async fn split_audio_files(
     chunk_minutes: u32,
     _window: tauri::Window,
 ) -> Result<(), String> {
-    // TODO: Implement audio file splitting logic
-    // This is a placeholder that just logs the request
-    println!(
-        "Splitting {} files into {}-minute chunks to {}",
-        files.len(),
-        chunk_minutes,
-        dest_path
-    );
-    // segment_audio::segment_audio(files, dest_path, chunk_minutes).map_err(|e| e.to_string())?;
+    for (index, file) in files.iter().enumerate() {
+        // Emit progress start
+        window
+            .emit(
+                "copy-progress",
+                CopyProgress {
+                    file_name: file.name.clone(),
+                    completed: false,
+                    index,
+                    total: files.len(),
+                },
+            )
+            .map_err(|e| e.to_string())?;
+
+        // Convert chunk_minutes to seconds for segment_audio
+        let segment_time = (chunk_minutes * 60) as i32;
+        
+        // Call segment_audio for each file
+        audio_segment::segment_audio(&file.path, dest_path, segment_time)
+            .map_err(|e| format!("Failed to split {}: {}", file.name, e))?;
+
+        // Emit progress completion
+        window
+            .emit(
+                "copy-progress",
+                CopyProgress {
+                    file_name: file.name.clone(),
+                    completed: true,
+                    index,
+                    total: files.len(),
+                },
+            )
+            .map_err(|e| e.to_string())?;
+    }
     Ok(())
 }
 

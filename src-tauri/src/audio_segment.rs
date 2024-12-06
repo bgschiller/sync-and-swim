@@ -9,7 +9,7 @@ use std::ffi::CString;
 use std::path::Path;
 use std::fs;
 
-fn segment_audio(input_filename: &str, output_folder: &str, segment_time: i32) -> Result<()> {
+pub fn segment_audio(input_filename: &str, output_folder: &str, segment_time: i32) -> Result<()> {
     // Ensure output directory exists
     fs::create_dir_all(output_folder)?;
     // Open input file
