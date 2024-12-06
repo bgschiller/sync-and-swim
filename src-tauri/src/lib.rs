@@ -107,7 +107,7 @@ async fn split_audio_files(
     files: Vec<AudioFile>,
     dest_path: &str,
     chunk_minutes: u32,
-    _window: tauri::Window,
+    window: tauri::Window,
 ) -> Result<(), String> {
     for (index, file) in files.iter().enumerate() {
         // Emit progress start
