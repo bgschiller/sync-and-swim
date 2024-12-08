@@ -126,9 +126,15 @@ async fn split_audio_files(
         // Convert chunk_minutes to seconds for segment_audio
         let segment_time = (chunk_minutes * 60) as i32;
         
-        // Call segment_audio for each file
-        audio_segment::segment_audio(&file.path, dest_path, segment_time)
-            .map_err(|e| format!("Failed to split {}: {}", file.name, e))?;
+        // Call segment_audio for each file with progress tracking
+        audio_segment::segment_audio(
+            &file.path,
+            dest_path,
+            segment_time,
+            &window,
+            index,
+            files.len()
+        ).map_err(|e| format!("Failed to split {}: {}", file.name, e))?;
 
         // Emit progress completion
         window
