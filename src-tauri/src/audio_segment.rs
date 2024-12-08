@@ -3,7 +3,7 @@ use std::path::Path;
 use std::fs;
 use std::process::{Command, Stdio};
 use std::io::{BufRead, BufReader};
-use tauri::Window;
+use tauri::{Window, Emitter};
 
 #[derive(Clone, serde::Serialize)]
 pub struct SegmentProgress {
