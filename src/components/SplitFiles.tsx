@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 
 interface AudioFile {
   name: string;
@@ -13,6 +14,23 @@ function SplitFiles() {
   const [destDir, setDestDir] = useState<string>("");
   const [files, setFiles] = useState<AudioFile[]>([]);
   const [chunkMinutes, setChunkMinutes] = useState<number>(3);
+  const [progress, setProgress] = useState<{[key: string]: number}>({});
+  const [currentFile, setCurrentFile] = useState<string>("");
+
+  useEffect(() => {
+    const unlisten = listen("segment-progress", (event: any) => {
+      const { file_name, progress: fileProgress, completed } = event.payload;
+      setCurrentFile(file_name);
+      setProgress(prev => ({
+        ...prev,
+        [file_name]: completed ? 100 : fileProgress
+      }));
+    });
+
+    return () => {
+      unlisten.then(fn => fn());
+    };
+  }, []);
 
   const handleSelectSource = async () => {
     const selected = await open({
@@ -70,7 +88,14 @@ function SplitFiles() {
         {files.length > 0 ? (
           <ul>
             {files.map((file, index) => (
-              <li key={index}>{file.name}</li>
+              <li key={index}>
+                {file.name}
+                {currentFile === file.name && (
+                  <div className="progress">
+                    Progress: {progress[file.name]?.toFixed(1) || 0}%
+                  </div>
+                )}
+              </li>
             ))}
           </ul>
         ) : (
