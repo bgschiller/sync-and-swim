@@ -73,30 +73,38 @@ pub fn segment_audio(
         }
     ).context("Failed to emit progress")?;
 
-    // Read ffmpeg output line by line
+    // Read ffmpeg output line by line looking for the input file line
+    let mut started = false;
     for line in reader.lines() {
         let line = line.context("Failed to read line")?;
-        if line.contains("Opening") && line.contains("for writing") {
-            // A new segment is being written, update progress
-            if let Some(segment_num) = line
-                .split('\'')
-                .nth(1)
-                .and_then(|s| s.split("part_").nth(1))
-                .and_then(|s| s.split('.').next())
-                .and_then(|s| s.parse::<i32>().ok())
-            {
-                let progress = (segment_num as f64 * segment_time as f64) / 100.0;
-                window.emit(
-                    "segment-progress",
-                    SegmentProgress {
-                        file_name: file_name.clone(),
-                        progress,
-                        completed: false,
-                        index,
-                        total,
-                    }
-                ).context("Failed to emit progress")?;
-            }
+        
+        // Look for the input file line that indicates processing has started
+        if line.contains("Input #0") {
+            started = true;
+            window.emit(
+                "segment-progress",
+                SegmentProgress {
+                    file_name: file_name.clone(),
+                    progress: 10.0, // Initial progress
+                    completed: false,
+                    index,
+                    total,
+                }
+            ).context("Failed to emit progress")?;
+        }
+        
+        // Once we've started, periodically update progress
+        if started {
+            window.emit(
+                "segment-progress",
+                SegmentProgress {
+                    file_name: file_name.clone(),
+                    progress: 50.0, // Mid-progress
+                    completed: false,
+                    index,
+                    total,
+                }
+            ).context("Failed to emit progress")?;
         }
     }
 
