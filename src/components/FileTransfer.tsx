@@ -141,9 +141,11 @@ function FileTransfer() {
           copied.
         </p>
         <p>
-          This program copies the files one at a time, ensure each has arrived
-          before sending the next
+          This program copies the files one at a time, ensuring each has arrived
+          before sending the next.
         </p>
+      </div>
+      <div className="column">
         <div className="controls">
           <button onClick={selectSourceDir}>Select Source Folder</button>
           <button onClick={selectDestDir}>Select Destination Folder</button>
@@ -173,72 +175,70 @@ function FileTransfer() {
           {isTransferring ? "Transferring..." : "Transfer Files"}
         </button>
       </div>
-      {files.length > 0 && (
-        <div className="column">
-          <div className="file-list">
-            <h2>Files to Transfer:</h2>
-            <ul>
-              {Object.entries(
-                files.reduce<DirectoryStructure>((acc, file) => {
-                  const dir = file.relative_path || "";
-                  if (!acc[dir]) acc[dir] = [];
-                  acc[dir].push(file);
-                  return acc;
-                }, {}),
-              ).map(([dir, dirFiles]) => (
-                <li key={dir}>
-                  {dir ? (
-                    <>
-                      <div className="directory-header">
-                        <div
-                          className="directory-title"
-                          onClick={() =>
-                            setExpandedDirs((prev) => {
-                              const next = new Set(prev);
-                              if (next.has(dir)) {
-                                next.delete(dir);
-                              } else {
-                                next.add(dir);
-                              }
-                              return next;
-                            })
-                          }
+      <div className="column">
+        <div className="file-list">
+          <h2>Files to Transfer:</h2>
+          <ul>
+            {Object.entries(
+              files.reduce<DirectoryStructure>((acc, file) => {
+                const dir = file.relative_path || "";
+                if (!acc[dir]) acc[dir] = [];
+                acc[dir].push(file);
+                return acc;
+              }, {}),
+            ).map(([dir, dirFiles]) => (
+              <li key={dir}>
+                {dir ? (
+                  <>
+                    <div className="directory-header">
+                      <div
+                        className="directory-title"
+                        onClick={() =>
+                          setExpandedDirs((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(dir)) {
+                              next.delete(dir);
+                            } else {
+                              next.add(dir);
+                            }
+                            return next;
+                          })
+                        }
+                      >
+                        <span
+                          className={`directory-toggle ${expandedDirs.has(dir) ? "expanded" : ""}`}
                         >
-                          <span
-                            className={`directory-toggle ${expandedDirs.has(dir) ? "expanded" : ""}`}
-                          >
-                            ▶
-                          </span>
-                          {dir}/
-                        </div>
-                        <button
-                          className="shuffle-button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleDirectoryOrder(dir);
-                            setExpandedDirs((prev) => new Set(prev).add(dir));
-                          }}
-                        >
-                          {shuffledDirs.has(dir) ? "↕️ Sort" : "🔀 Shuffle"}
-                        </button>
+                          ▶
+                        </span>
+                        {dir}/
                       </div>
-                      {expandedDirs.has(dir) && (
-                        <ul className="directory-files">
-                          {dirFiles.map((file) => (
-                            <li key={file.path}>{file.name}</li>
-                          ))}
-                        </ul>
-                      )}
-                    </>
-                  ) : (
-                    dirFiles.map((file) => <li key={file.path}>{file.name}</li>)
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
+                      <button
+                        className="shuffle-button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleDirectoryOrder(dir);
+                          setExpandedDirs((prev) => new Set(prev).add(dir));
+                        }}
+                      >
+                        {shuffledDirs.has(dir) ? "↕️ Sort" : "🔀 Shuffle"}
+                      </button>
+                    </div>
+                    {expandedDirs.has(dir) && (
+                      <ul className="directory-files">
+                        {dirFiles.map((file) => (
+                          <li key={file.path}>{file.name}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </>
+                ) : (
+                  dirFiles.map((file) => <li key={file.path}>{file.name}</li>)
+                )}
+              </li>
+            ))}
+          </ul>
         </div>
-      )}
+      </div>
     </div>
   );
 }
