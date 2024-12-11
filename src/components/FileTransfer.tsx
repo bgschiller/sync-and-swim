@@ -131,7 +131,6 @@ function FileTransfer() {
     }
   }
 
-  // Instead of using grid for the layout, please use flexbox AI!
   return (
     <div className="file-transfer-container">
       <div className="left-column">

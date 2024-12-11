@@ -1,10 +1,15 @@
 .file-transfer-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   gap: 2rem;
   padding: 1rem;
   max-width: 1200px;
   margin: 0 auto;
+}
+
+.left-column,
+.right-column {
+  flex: 1;
+  min-width: 0; /* Prevents flex items from overflowing */
 }
 
 .left-column {
