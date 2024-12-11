@@ -267,61 +267,59 @@ function FileTransfer() {
                 acc[dir].push(file);
                 return acc;
               }, {}),
-            ).map(([dir, dirFiles]) => (
-              <li key={dir}>
-                {dir ? (
-                  <>
-                    <div className="directory-header">
-                      <div
-                        className="directory-title"
-                        onClick={() =>
-                          setExpandedDirs((prev) => {
-                            const next = new Set(prev);
-                            if (next.has(dir)) {
-                              next.delete(dir);
-                            } else {
-                              next.add(dir);
-                            }
-                            return next;
-                          })
-                        }
-                      >
-                        <span>
-                          <span
-                            className={`directory-toggle ${expandedDirs.has(dir) ? "expanded" : ""}`}
-                          >
-                            ▶
-                          </span>
-                          {dir}
+            ).map(([dir, dirFiles]) =>
+              dir ? (
+                <li key={dir} className="top-of-map">
+                  <div className="directory-header">
+                    <div
+                      className="directory-title"
+                      onClick={() =>
+                        setExpandedDirs((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(dir)) {
+                            next.delete(dir);
+                          } else {
+                            next.add(dir);
+                          }
+                          return next;
+                        })
+                      }
+                    >
+                      <span>
+                        <span
+                          className={`directory-toggle ${expandedDirs.has(dir) ? "expanded" : ""}`}
+                        >
+                          ▶
                         </span>
-                        <span className="directory-count">
-                          {`${dirFiles.length} files`}
-                        </span>
-                      </div>
-                      <button
-                        className="shuffle-button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleDirectoryOrder(dir);
-                          setExpandedDirs((prev) => new Set(prev).add(dir));
-                        }}
-                      >
-                        {shuffledDirs.has(dir) ? "↕️ Sort" : "🔀 Shuffle"}
-                      </button>
+                        {dir}
+                      </span>
+                      <span className="directory-count">
+                        {`${dirFiles.length} files`}
+                      </span>
                     </div>
-                    {expandedDirs.has(dir) && (
-                      <ul className="directory-files">
-                        {dirFiles.map((file) => (
-                          <li key={file.path}>{file.name}</li>
-                        ))}
-                      </ul>
-                    )}
-                  </>
-                ) : (
-                  dirFiles.map((file) => <li key={file.path}>{file.name}</li>)
-                )}
-              </li>
-            ))}
+                    <button
+                      className="shuffle-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleDirectoryOrder(dir);
+                        setExpandedDirs((prev) => new Set(prev).add(dir));
+                      }}
+                    >
+                      {shuffledDirs.has(dir) ? "↕️ Sort" : "🔀 Shuffle"}
+                    </button>
+                  </div>
+                  {expandedDirs.has(dir) && (
+                    <ul className="directory-files">
+                      {dirFiles.map((file) => (
+                        <li key={file.path}>{file.name}</li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              ) : (
+                dirFiles.map((file) => <li key={file.path}>{file.name}</li>)
+              ),
+            )}
           </ul>
         </div>
       </div>

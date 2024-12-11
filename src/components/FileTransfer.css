@@ -14,7 +14,7 @@
 }
 
 .column {
-  flex: 1;
+  flex: 2;
   min-width: 0; /* Prevents flex items from overflowing */
   display: flex;
   flex-direction: column;
@@ -22,7 +22,7 @@
 }
 
 .column:last-child {
-  flex: 2;
+  flex: 3;
   background: rgba(0, 0, 0, 0.05);
   border-radius: 8px;
 }

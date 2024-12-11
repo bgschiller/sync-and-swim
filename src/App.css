@@ -227,6 +227,7 @@ button:disabled {
   padding: 1.5rem;
   border-radius: 6px;
   border: 1px solid var(--border-color);
+  height: 100%;
 }
 
 .file-list h2 {
@@ -238,12 +239,16 @@ button:disabled {
 
 .file-list ul {
   list-style: none;
+}
+.directory-list {
   margin: 0 0 1.5rem 0;
 }
 .file-list .directory-list {
   padding: 0;
   border: 1px solid var(--border-color);
   border-radius: 4px;
+  max-height: 550px;
+  overflow: auto;
 }
 
 .file-list li {
@@ -296,19 +301,17 @@ button:disabled {
 .directory-files {
   padding-left: 1.5rem;
   max-height: 120px;
-  overflow-y: scroll;
+  overflow: auto;
 }
-.directory-files ::-webkit-scrollbar {
+.directory-files::-webkit-scrollbar {
   -webkit-appearance: none;
   width: 7px;
-  background-color: tomato;
 }
 
-.directory-files ::-webkit-scrollbar-thumb {
+.directory-files::-webkit-scrollbar-thumb {
   border-radius: 4px;
   background-color: rgba(0, 0, 0, 0.5);
   box-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
-  background: salmon;
 }
 
 .directory-toggle {
