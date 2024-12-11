@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
-import { listen } from '@tauri-apps/api/event';
+import { listen } from "@tauri-apps/api/event";
 
 interface AudioFile {
   name: string;
   path: string;
-  relative_path: string;  // Path relative to source directory
+  relative_path: string; // Path relative to source directory
 }
 
 interface DirectoryStructure {
@@ -24,7 +24,7 @@ function FileTransfer() {
   const [sourceDir, setSourceDir] = useState<string>("");
   const [destDir, setDestDir] = useState<string>("");
   const [files, setFiles] = useState<AudioFile[]>([]);
-  const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set(['']));
+  const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set([""]));
   const [shuffledDirs, setShuffledDirs] = useState<Set<string>>(new Set());
   const [currentFile, setCurrentFile] = useState<string>("");
   const [progress, setProgress] = useState<number>(0);
@@ -32,21 +32,19 @@ function FileTransfer() {
 
   useEffect(() => {
     const setupListener = async () => {
-      await listen<CopyProgress>(
-      'copy-progress',
-      (event) => {
+      await listen<CopyProgress>("copy-progress", (event) => {
         const { file_name, index, total } = event.payload;
         setCurrentFile(file_name);
-        setProgress(Math.round((index + 1) * 100 / total));
-      }
-    );
+        setProgress(Math.round(((index + 1) * 100) / total));
+      });
     };
-    
+
     setupListener();
-    
+
     return () => {
-      listen<CopyProgress>('copy-progress', () => {})
-        .then(unlisten => unlisten());
+      listen<CopyProgress>("copy-progress", () => {}).then((unlisten) =>
+        unlisten(),
+      );
     };
   }, []);
 
@@ -54,11 +52,13 @@ function FileTransfer() {
     const selected = await open({
       directory: true,
       multiple: false,
-      title: "Select Source Directory"
+      title: "Select Source Directory",
     });
     if (selected && !Array.isArray(selected)) {
       setSourceDir(selected);
-      const audioFiles = await invoke<AudioFile[]>("list_audio_files", { path: selected });
+      const audioFiles = await invoke<AudioFile[]>("list_audio_files", {
+        path: selected,
+      });
       setFiles(audioFiles);
     }
   }
@@ -67,7 +67,7 @@ function FileTransfer() {
     const selected = await open({
       directory: true,
       multiple: false,
-      title: "Select Destination Directory"
+      title: "Select Destination Directory",
     });
     if (selected && !Array.isArray(selected)) {
       setDestDir(selected);
@@ -75,21 +75,24 @@ function FileTransfer() {
   }
 
   function toggleDirectoryOrder(dirPath: string) {
-    setFiles(prevFiles => {
+    setFiles((prevFiles) => {
       // Create a map to maintain directory order
-      const filesByDir = prevFiles.reduce<Record<string, AudioFile[]>>((acc, file) => {
-        const dir = file.relative_path;
-        if (!acc[dir]) acc[dir] = [];
-        acc[dir].push(file);
-        return acc;
-      }, {});
-      
+      const filesByDir = prevFiles.reduce<Record<string, AudioFile[]>>(
+        (acc, file) => {
+          const dir = file.relative_path;
+          if (!acc[dir]) acc[dir] = [];
+          acc[dir].push(file);
+          return acc;
+        },
+        {},
+      );
+
       if (filesByDir[dirPath]) {
         const dirFiles = filesByDir[dirPath];
         if (shuffledDirs.has(dirPath)) {
           // Sort alphabetically
           dirFiles.sort((a, b) => a.name.localeCompare(b.name));
-          setShuffledDirs(prev => {
+          setShuffledDirs((prev) => {
             const next = new Set(prev);
             next.delete(dirPath);
             return next;
@@ -100,10 +103,10 @@ function FileTransfer() {
             const j = Math.floor(Math.random() * (i + 1));
             [dirFiles[i], dirFiles[j]] = [dirFiles[j], dirFiles[i]];
           }
-          setShuffledDirs(prev => new Set(prev).add(dirPath));
+          setShuffledDirs((prev) => new Set(prev).add(dirPath));
         }
       }
-      
+
       // Flatten back to array while maintaining directory order
       return Object.values(filesByDir).flat();
     });
@@ -127,8 +130,19 @@ function FileTransfer() {
     }
   }
 
+  // AI: Make the contents of this component flow across two columns AI!
   return (
     <div>
+      <p>
+        If you try to copy audio files to Shokz headphones with most tools,
+        they'll end up out of order. Instead of sorting by filename, the
+        headphones decide which track is next according to when each file was
+        copied.
+      </p>
+      <p>
+        This program copies the files one at a time, ensure each has arrived
+        before sending the next
+      </p>
       <div className="controls">
         <button onClick={selectSourceDir}>Select Source Folder</button>
         <button onClick={selectDestDir}>Select Destination Folder</button>
@@ -141,60 +155,60 @@ function FileTransfer() {
         <div className="file-list">
           <h2>Files to Transfer:</h2>
           <ul>
-            {Object.entries(files.reduce<DirectoryStructure>((acc, file) => {
-              const dir = file.relative_path || '';
-              if (!acc[dir]) acc[dir] = [];
-              acc[dir].push(file);
-              return acc;
-            }, {})).map(([dir, dirFiles]) => (
+            {Object.entries(
+              files.reduce<DirectoryStructure>((acc, file) => {
+                const dir = file.relative_path || "";
+                if (!acc[dir]) acc[dir] = [];
+                acc[dir].push(file);
+                return acc;
+              }, {}),
+            ).map(([dir, dirFiles]) => (
               <li key={dir}>
                 {dir ? (
                   <>
                     <div className="directory-header">
-                      <div 
+                      <div
                         className="directory-title"
-                        onClick={() => setExpandedDirs(prev => {
-                          const next = new Set(prev);
-                          if (next.has(dir)) {
-                            next.delete(dir);
-                          } else {
-                            next.add(dir);
-                          }
-                          return next;
-                        })}
+                        onClick={() =>
+                          setExpandedDirs((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(dir)) {
+                              next.delete(dir);
+                            } else {
+                              next.add(dir);
+                            }
+                            return next;
+                          })
+                        }
                       >
-                        <span className={`directory-toggle ${expandedDirs.has(dir) ? 'expanded' : ''}`}>
+                        <span
+                          className={`directory-toggle ${expandedDirs.has(dir) ? "expanded" : ""}`}
+                        >
                           ▶
                         </span>
                         {dir}/
                       </div>
-                      <button 
+                      <button
                         className="shuffle-button"
                         onClick={(e) => {
                           e.stopPropagation();
                           toggleDirectoryOrder(dir);
-                          setExpandedDirs(prev => new Set(prev).add(dir));
+                          setExpandedDirs((prev) => new Set(prev).add(dir));
                         }}
                       >
-                        {shuffledDirs.has(dir) ? '↕️ Sort' : '🔀 Shuffle'}
+                        {shuffledDirs.has(dir) ? "↕️ Sort" : "🔀 Shuffle"}
                       </button>
                     </div>
                     {expandedDirs.has(dir) && (
                       <ul className="directory-files">
                         {dirFiles.map((file) => (
-                          <li key={file.path}>
-                            {file.name}
-                          </li>
+                          <li key={file.path}>{file.name}</li>
                         ))}
                       </ul>
                     )}
                   </>
                 ) : (
-                  dirFiles.map((file) => (
-                    <li key={file.path}>
-                      {file.name}
-                    </li>
-                  ))
+                  dirFiles.map((file) => <li key={file.path}>{file.name}</li>)
                 )}
               </li>
             ))}
@@ -204,19 +218,19 @@ function FileTransfer() {
               <p>Copying: {currentFile}</p>
               <p>Progress: {progress}%</p>
               <div className="progress-bar">
-                <div 
-                  className="progress-bar-fill" 
+                <div
+                  className="progress-bar-fill"
                   style={{ width: `${progress}%` }}
                 />
               </div>
             </div>
           )}
 
-          <button 
+          <button
             onClick={handleTransfer}
             disabled={!destDir || isTransferring}
           >
-            {isTransferring ? 'Transferring...' : 'Transfer Files'}
+            {isTransferring ? "Transferring..." : "Transfer Files"}
           </button>
         </div>
       )}
