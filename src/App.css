@@ -158,16 +158,14 @@ body {
   align-items: center;
   padding: 2rem;
   background: white;
-  border: 2px solid var(--border-color);
-  border-radius: 12px;
-  transition: all 0.3s ease;
-  height: 200px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  height: auto;
+  min-height: 180px;
 }
 
 .menu-option:hover {
-  transform: translateY(-5px);
   border-color: var(--primary-color);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
 .menu-option h2 {
@@ -178,14 +176,7 @@ body {
 .menu-option p {
   text-align: center;
   color: var(--text-color);
-  opacity: 0;
-  transform: translateY(10px);
-  transition: all 0.3s ease;
-}
-
-.menu-option p.description-visible {
-  opacity: 1;
-  transform: translateY(0);
+  margin: 0;
 }
 
 .back-button {

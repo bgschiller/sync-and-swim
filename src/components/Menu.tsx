@@ -13,8 +13,6 @@ interface MenuProps {
 }
 
 function Menu({ options, onSelect }: MenuProps) {
-  const [hoveredOption, setHoveredOption] = useState<string | null>(null);
-
   return (
     <div className="menu">
       <h1>Audio File Manager</h1>
@@ -24,13 +22,9 @@ function Menu({ options, onSelect }: MenuProps) {
             key={option.id}
             className="menu-option"
             onClick={() => onSelect(option)}
-            onMouseEnter={() => setHoveredOption(option.id)}
-            onMouseLeave={() => setHoveredOption(null)}
           >
             <h2>{option.title}</h2>
-            <p className={hoveredOption === option.id ? 'description-visible' : ''}>
-              {option.description}
-            </p>
+            <p>{option.description}</p>
           </button>
         ))}
       </div>
