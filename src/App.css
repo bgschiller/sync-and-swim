@@ -131,46 +131,81 @@ body {
   margin: 0;
 }
 
-.tabs {
+.menu {
   display: flex;
-  gap: 0.5rem;
-  border-bottom: 2px solid var(--border-color);
-  padding: 1rem 1rem 0;
-  background: white;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  height: 100%;
 }
 
-.tab {
-  background: #f1f5f9;
-  border: 1px solid var(--border-color);
-  border-bottom: none;
-  padding: 0.75rem 1.5rem;
-  color: var(--text-color);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  border-radius: 8px 8px 0 0;
-  position: relative;
-  bottom: -1px;
-  min-width: 120px;
-}
-
-.tab:hover:not(.active) {
-  background-color: #e2e8f0;
-  border-color: #cbd5e1;
-}
-
-.tab.active {
-  background-color: white;
+.menu h1 {
+  margin-bottom: 3rem;
   color: var(--primary-color);
-  border-bottom: 2px solid white;
-  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.tab-content {
-  padding: 2rem 1rem;
+.menu-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  width: 100%;
+  max-width: 800px;
+}
+
+.menu-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  background: white;
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  height: 200px;
+}
+
+.menu-option:hover {
+  transform: translateY(-5px);
+  border-color: var(--primary-color);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.menu-option h2 {
+  margin: 0 0 1rem 0;
+  color: var(--primary-color);
+}
+
+.menu-option p {
+  text-align: center;
+  color: var(--text-color);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+}
+
+.menu-option p.description-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.back-button {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.5rem 1rem;
+}
+
+.back-button:hover {
+  background: var(--primary-color);
+  color: white;
+}
+
+.content {
+  position: relative;
+  padding-top: 4rem;
 }
 
 h1 {
