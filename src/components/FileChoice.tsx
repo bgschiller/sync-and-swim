@@ -1,4 +1,5 @@
 import { open } from "@tauri-apps/plugin-dialog";
+import { useEffect } from "react";
 import "./FileChoice.css";
 
 interface FileChoiceProps {
@@ -8,6 +9,15 @@ interface FileChoiceProps {
 }
 
 export function FileChoice({ label, value, onChange }: FileChoiceProps) {
+  const storageKey = `fileChoice_${label.toLowerCase().replace(/\s+/g, '_')}`;
+
+  useEffect(() => {
+    const savedValue = localStorage.getItem(storageKey);
+    if (savedValue && !value) {
+      onChange(savedValue);
+    }
+  }, []);
+
   const handleSelect = async () => {
     const selected = await open({
       directory: true,
@@ -15,6 +25,7 @@ export function FileChoice({ label, value, onChange }: FileChoiceProps) {
       title: `Select ${label}`,
     });
     if (selected && !Array.isArray(selected)) {
+      localStorage.setItem(storageKey, selected);
       onChange(selected);
     }
   };
