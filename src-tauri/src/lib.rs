@@ -57,7 +57,7 @@ fn visit_dirs(dir: &PathBuf, base_path: &PathBuf) -> Result<Vec<AudioFile>, Stri
 }
 
 #[tauri::command]
-async fn list_directory_files(path: &str) -> Result<Vec<AudioFile>, String> {
+async fn shallow_list_files(path: &str) -> Result<Vec<AudioFile>, String> {
     let dir = PathBuf::from(path);
     let mut files = Vec::new();
 
@@ -215,7 +215,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             list_audio_files,
             copy_files,
-            list_directory_files,
+            shallow_list_files,
             split_audio_files,
         ])
         .run(tauri::generate_context!())
