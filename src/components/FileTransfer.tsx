@@ -31,6 +31,7 @@ function FileTransfer() {
   const [currentFile, setCurrentFile] = useState<string>("");
   const [progress, setProgress] = useState<number>(0);
   const [isTransferring, setIsTransferring] = useState(false);
+  const [transferMode, setTransferMode] = useState<'append' | 'replace'>('append');
 
   useEffect(() => {
     const setupListener = async () => {
@@ -121,7 +122,11 @@ function FileTransfer() {
     }
     try {
       setIsTransferring(true);
-      await invoke("copy_files", { files, destPath: destDir });
+      await invoke("copy_files", { 
+        files, 
+        destPath: destDir,
+        mode: transferMode 
+      });
       alert("Files transferred successfully!");
     } catch (error) {
       alert(`Transfer failed: ${error}`);
@@ -176,9 +181,30 @@ function FileTransfer() {
             />
           </li>
           <li>
-            TODO: make a radio button here to choose between 1. Add after
-            existing files, or 2. Delete (x number of) existing files on the
-            headphones
+            <div className="radio-group">
+              <div className="radio-option">
+                <input
+                  type="radio"
+                  id="append"
+                  name="transferMode"
+                  value="append"
+                  checked={transferMode === 'append'}
+                  onChange={(e) => setTransferMode(e.target.value as 'append' | 'replace')}
+                />
+                <label htmlFor="append">Add after existing files</label>
+              </div>
+              <div className="radio-option">
+                <input
+                  type="radio"
+                  id="replace"
+                  name="transferMode"
+                  value="replace"
+                  checked={transferMode === 'replace'}
+                  onChange={(e) => setTransferMode(e.target.value as 'append' | 'replace')}
+                />
+                <label htmlFor="replace">Replace existing files</label>
+              </div>
+            </div>
           </li>
         </ol>
 

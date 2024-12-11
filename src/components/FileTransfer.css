@@ -28,6 +28,27 @@
   margin: 1rem 0;
 }
 
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.radio-option input[type="radio"] {
+  margin: 0;
+}
+
+.radio-option label {
+  cursor: pointer;
+}
+
 .transfer-button {
   margin-top: 1rem;
   width: fit-content;
