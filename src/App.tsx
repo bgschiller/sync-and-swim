@@ -6,39 +6,43 @@ import SplitFiles from "./components/SplitFiles";
 
 const menuOptions = [
   {
-    id: 'transfer',
-    title: 'Load Audio onto Headphones',
-    description: 'Transfer and organize audio files to your device with optional shuffle functionality.',
-    component: FileTransfer
+    id: "transfer",
+    title: "Load Audio onto Headphones",
+    description:
+      "Shokz headphones order tracks by the date they were added. That can jumble audiobooks if you're not careful. This tool moves them one at a time to make sure they keep the correct order.",
+    component: FileTransfer,
   },
   {
-    id: 'split',
-    title: 'Cut Audio into Smaller Pieces',
-    description: 'Split long audio files into smaller segments of specified duration.',
-    component: SplitFiles
-  }
+    id: "split",
+    title: "Cut Audio into Smaller Pieces",
+    description:
+      "Split audiobooks or podcasts into shorter pieces. This makes it easier to skip forward and backward just a bit without a screen",
+    component: SplitFiles,
+  },
 ];
 
 function App() {
-  const [selectedOption, setSelectedOption] = useState<typeof menuOptions[0] | null>(null);
+  const [selectedOption, setSelectedOption] = useState<
+    (typeof menuOptions)[0] | null
+  >(null);
 
   return (
     <main className="container">
       {selectedOption ? (
         <div className="content">
-          <button 
-            className="back-button"
-            onClick={() => setSelectedOption(null)}
-          >
-            ← Back to Menu
-          </button>
+          <header>
+            <button
+              className="back-button"
+              onClick={() => setSelectedOption(null)}
+            >
+              ← Back to Menu
+            </button>
+            {selectedOption.title && <h2>{selectedOption.title}</h2>}
+          </header>
           <selectedOption.component />
         </div>
       ) : (
-        <Menu 
-          options={menuOptions} 
-          onSelect={setSelectedOption}
-        />
+        <Menu options={menuOptions} onSelect={setSelectedOption} />
       )}
     </main>
   );

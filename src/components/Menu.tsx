@@ -1,10 +1,8 @@
-import { useState } from "react";
-
 interface MenuOption {
   id: string;
   title: string;
   description: string;
-  component: React.ComponentType;
+  component: () => JSX.Element;
 }
 
 interface MenuProps {

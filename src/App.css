@@ -76,12 +76,9 @@ button {
   cursor: pointer;
 }
 
-button:hover {
-  border-color: #396cd8;
-}
+button:hover,
 button:active {
-  border-color: #396cd8;
-  background-color: #e8e8e8;
+  border-color: var(--primary-color);
 }
 
 input,
@@ -180,13 +177,10 @@ body {
 }
 
 .back-button {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
   background: transparent;
   color: var(--primary-color);
   border: 1px solid var(--primary-color);
-  padding: 0.5rem 1rem;
+  padding: 1rem 1rem;
 }
 
 .back-button:hover {
@@ -196,7 +190,14 @@ body {
 
 .content {
   position: relative;
-  padding-top: 4rem;
+  padding-top: 1rem;
+}
+header {
+  display: flex;
+  padding-left: 1rem;
+}
+header h2 {
+  padding-left: 4rem;
 }
 
 h1 {
@@ -213,7 +214,7 @@ h1 {
   flex-wrap: wrap;
 }
 
-button {
+button.action {
   background-color: var(--primary-color);
   color: white;
   border: none;
@@ -225,7 +226,6 @@ button {
 }
 
 button:hover:not(:disabled) {
-  background-color: var(--primary-hover);
 }
 
 button:disabled {
