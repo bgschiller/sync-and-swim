@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { FileChoice } from "./FileChoice";
 import "./FileTransfer.css";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
@@ -147,12 +148,23 @@ function FileTransfer() {
       </div>
       <div className="column">
         <div className="controls">
-          <button onClick={selectSourceDir}>Select Source Folder</button>
-          <button onClick={selectDestDir}>Select Destination Folder</button>
+          <FileChoice
+            label="Source Folder"
+            value={sourceDir}
+            onChange={async (path) => {
+              setSourceDir(path);
+              const audioFiles = await invoke<AudioFile[]>("list_audio_files", {
+                path,
+              });
+              setFiles(audioFiles);
+            }}
+          />
+          <FileChoice
+            label="Destination Folder"
+            value={destDir}
+            onChange={setDestDir}
+          />
         </div>
-
-        {sourceDir && <p>Source: {sourceDir}</p>}
-        {destDir && <p>Destination: {destDir}</p>}
 
         {isTransferring && (
           <div className="progress">
