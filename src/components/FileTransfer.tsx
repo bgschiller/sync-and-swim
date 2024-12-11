@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import "./FileTransfer.css";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { listen } from "@tauri-apps/api/event";
@@ -130,10 +131,10 @@ function FileTransfer() {
     }
   }
 
-  // AI: Make the contents of this component flow across two columns AI!
   return (
-    <div>
-      <p>
+    <div className="file-transfer-container">
+      <div className="left-column">
+        <p>
         If you try to copy audio files to Shokz headphones with most tools,
         they'll end up out of order. Instead of sorting by filename, the
         headphones decide which track is next according to when each file was
@@ -143,15 +144,38 @@ function FileTransfer() {
         This program copies the files one at a time, ensure each has arrived
         before sending the next
       </p>
-      <div className="controls">
-        <button onClick={selectSourceDir}>Select Source Folder</button>
-        <button onClick={selectDestDir}>Select Destination Folder</button>
+        <div className="controls">
+          <button onClick={selectSourceDir}>Select Source Folder</button>
+          <button onClick={selectDestDir}>Select Destination Folder</button>
+        </div>
+
+        {sourceDir && <p>Source: {sourceDir}</p>}
+        {destDir && <p>Destination: {destDir}</p>}
+
+        {isTransferring && (
+          <div className="progress">
+            <p>Copying: {currentFile}</p>
+            <p>Progress: {progress}%</p>
+            <div className="progress-bar">
+              <div
+                className="progress-bar-fill"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        <button
+          onClick={handleTransfer}
+          disabled={!destDir || isTransferring}
+          className="transfer-button"
+        >
+          {isTransferring ? "Transferring..." : "Transfer Files"}
+        </button>
       </div>
 
-      {sourceDir && <p>Source: {sourceDir}</p>}
-      {destDir && <p>Destination: {destDir}</p>}
-
       {files.length > 0 && (
+        <div className="right-column">
         <div className="file-list">
           <h2>Files to Transfer:</h2>
           <ul>
@@ -213,25 +237,6 @@ function FileTransfer() {
               </li>
             ))}
           </ul>
-          {isTransferring && (
-            <div className="progress">
-              <p>Copying: {currentFile}</p>
-              <p>Progress: {progress}%</p>
-              <div className="progress-bar">
-                <div
-                  className="progress-bar-fill"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
-          )}
-
-          <button
-            onClick={handleTransfer}
-            disabled={!destDir || isTransferring}
-          >
-            {isTransferring ? "Transferring..." : "Transfer Files"}
-          </button>
         </div>
       )}
     </div>
