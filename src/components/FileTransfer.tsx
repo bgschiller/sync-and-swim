@@ -147,24 +147,40 @@ function FileTransfer() {
         </p>
       </div>
       <div className="column">
-        <div className="controls">
-          <FileChoice
-            label="Source Folder"
-            value={sourceDir}
-            onChange={async (path) => {
-              setSourceDir(path);
-              const audioFiles = await invoke<AudioFile[]>("list_audio_files", {
-                path,
-              });
-              setFiles(audioFiles);
-            }}
-          />
-          <FileChoice
-            label="Destination Folder"
-            value={destDir}
-            onChange={setDestDir}
-          />
-        </div>
+        <ol className="controls">
+          <li>
+            Choose a folder on your computer with the audio files you want to
+            transfer.
+            <FileChoice
+              label="Source Folder"
+              value={sourceDir}
+              onChange={async (path) => {
+                setSourceDir(path);
+                const audioFiles = await invoke<AudioFile[]>(
+                  "list_audio_files",
+                  {
+                    path,
+                  },
+                );
+                setFiles(audioFiles);
+              }}
+            />
+          </li>
+          <li>
+            Choose the folder representing your headphones (it's probably named
+            something like "/Volumes/OpenSwim")
+            <FileChoice
+              label="Destination Folder"
+              value={destDir}
+              onChange={setDestDir}
+            />
+          </li>
+          <li>
+            TODO: make a radio button here to choose between 1. Add after
+            existing files, or 2. Delete (x number of) existing files on the
+            headphones
+          </li>
+        </ol>
 
         {isTransferring && (
           <div className="progress">
