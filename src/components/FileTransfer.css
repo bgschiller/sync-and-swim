@@ -6,19 +6,15 @@
   margin: 0 auto;
 }
 
-.left-column,
-.right-column {
+.column {
   flex: 1;
   min-width: 0; /* Prevents flex items from overflowing */
-}
-
-.left-column {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.right-column {
+.column:last-child {
   background: rgba(0, 0, 0, 0.05);
   border-radius: 8px;
   padding: 1rem;

@@ -133,7 +133,7 @@ function FileTransfer() {
 
   return (
     <div className="file-transfer-container">
-      <div className="left-column">
+      <div className="column">
         <p>
           If you try to copy audio files to Shokz headphones with most tools,
           they'll end up out of order. Instead of sorting by filename, the
@@ -174,7 +174,7 @@ function FileTransfer() {
         </button>
       </div>
       {files.length > 0 && (
-        <div className="right-column">
+        <div className="column">
           <div className="file-list">
             <h2>Files to Transfer:</h2>
             <ul>
