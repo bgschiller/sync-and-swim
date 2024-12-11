@@ -184,10 +184,15 @@ body {
 }
 header {
   display: flex;
-  padding-left: 1rem;
+  padding: 0 1rem;
+  align-items: center;
+  position: relative;
 }
 header h2 {
-  padding-left: 4rem;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
 }
 
 h1 {
