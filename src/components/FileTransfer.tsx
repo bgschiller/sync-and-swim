@@ -31,9 +31,8 @@ function FileTransfer() {
   const [currentFile, setCurrentFile] = useState<string>("");
   const [progress, setProgress] = useState<number>(0);
   const [isTransferring, setIsTransferring] = useState(false);
-  const [transferMode, setTransferMode] = useState<"append" | "replace">(
-    "append",
-  );
+  const [transferMode, setTransferMode] = useState<"append" | "replace">("append");
+  const [existingFileCount, setExistingFileCount] = useState<number>(0);
 
   useEffect(() => {
     const setupListener = async () => {
@@ -179,7 +178,17 @@ function FileTransfer() {
             <FileChoice
               label="Destination Folder"
               value={destDir}
-              onChange={setDestDir}
+              onChange={async (path) => {
+                setDestDir(path);
+                if (path) {
+                  const existingFiles = await invoke<AudioFile[]>("list_directory_files", {
+                    path,
+                  });
+                  setExistingFileCount(existingFiles.length);
+                } else {
+                  setExistingFileCount(0);
+                }
+              }}
             />
           </li>
           <li>
@@ -196,7 +205,9 @@ function FileTransfer() {
                     setTransferMode(e.target.value as "append" | "replace")
                   }
                 />
-                <label htmlFor="append">Add after existing files</label>
+                <label htmlFor="append">
+                  Add after existing files ({existingFileCount} file{existingFileCount !== 1 ? 's' : ''})
+                </label>
               </div>
               <div className="radio-option">
                 <input
@@ -209,7 +220,9 @@ function FileTransfer() {
                     setTransferMode(e.target.value as "append" | "replace")
                   }
                 />
-                <label htmlFor="replace">Delete existing files first</label>
+                <label htmlFor="replace">
+                  Delete existing files first ({existingFileCount} file{existingFileCount !== 1 ? 's' : ''} will be removed)
+                </label>
               </div>
             </div>
           </li>
