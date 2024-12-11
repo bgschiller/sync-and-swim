@@ -111,6 +111,7 @@ button {
 .container {
   background-color: white;
   overflow-y: auto;
+  min-height: 100vh;
 }
 
 body {
