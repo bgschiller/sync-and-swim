@@ -9,7 +9,7 @@ interface FileChoiceProps {
 }
 
 export function FileChoice({ label, value, onChange }: FileChoiceProps) {
-  const storageKey = `fileChoice_${label.toLowerCase().replace(/\s+/g, '_')}`;
+  const storageKey = `fileChoice_${label.toLowerCase().replace(/\s+/g, "_")}`;
 
   useEffect(() => {
     const savedValue = localStorage.getItem(storageKey);
@@ -31,12 +31,11 @@ export function FileChoice({ label, value, onChange }: FileChoiceProps) {
   };
 
   return (
-    <button className="file-choice" onClick={handleSelect}>
-      <div
-        className={`file-choice-content ${value ? "file-choice-value" : "file-choice-placeholder"}`}
-      >
-        {value || `Click to select ${label.toLowerCase()}`}
-      </div>
+    <button
+      className={`file-choice-button ${value ? "file-choice-value" : "file-choice-placeholder"}`}
+      onClick={handleSelect}
+    >
+      {value || `Click to select ${label.toLowerCase()}`}
     </button>
   );
 }
