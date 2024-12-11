@@ -181,7 +181,7 @@ function FileTransfer() {
               onChange={async (path) => {
                 setDestDir(path);
                 if (path) {
-                  const existingFiles = await invoke<AudioFile[]>("list_directory_files", {
+                  const existingFiles = await invoke<AudioFile[]>("shallow_list_files", {
                     path,
                   });
                   setExistingFileCount(existingFiles.length);
