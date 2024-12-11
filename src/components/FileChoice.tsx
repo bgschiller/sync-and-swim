@@ -1,5 +1,5 @@
 import { open } from "@tauri-apps/plugin-dialog";
-import "./FileTransfer.css";
+import "./FileChoice.css";
 
 interface FileChoiceProps {
   label: string;
@@ -20,22 +20,12 @@ export function FileChoice({ label, value, onChange }: FileChoiceProps) {
   };
 
   return (
-    <div className="file-choice" onClick={() => !value && handleSelect()}>
-      {value ? (
-        <>
-          <div className="file-choice-content">
-            <span className="file-choice-label">{label}:</span>
-            <span className="file-choice-value">{value}</span>
-          </div>
-          <button className="file-choice-button" onClick={handleSelect}>
-            ⋯
-          </button>
-        </>
-      ) : (
-        <div className="file-choice-placeholder">
-          Click to select {label.toLowerCase()}
-        </div>
-      )}
-    </div>
+    <button className="file-choice" onClick={handleSelect}>
+      <div
+        className={`file-choice-content ${value ? "file-choice-value" : "file-choice-placeholder"}`}
+      >
+        {value || `Click to select ${label.toLowerCase()}`}
+      </div>
+    </button>
   );
 }
