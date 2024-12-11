@@ -238,14 +238,15 @@ button:disabled {
 
 .file-list ul {
   list-style: none;
-  padding: 0;
   margin: 0 0 1.5rem 0;
+}
+.file-list .directory-list {
+  padding: 0;
   border: 1px solid var(--border-color);
   border-radius: 4px;
 }
 
 .file-list li {
-  padding: 0.5rem;
   border-bottom: 1px solid var(--border-color);
   color: var(--text-color);
   text-align: left;
@@ -268,6 +269,7 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  width: calc(100% - 100px);
 }
 
 .shuffle-button {
@@ -276,6 +278,8 @@ button:disabled {
   background-color: #e2e8f0;
   color: var(--text-color);
   height: 32px;
+  width: 100px;
+  margin-left: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -291,6 +295,20 @@ button:disabled {
 
 .directory-files {
   padding-left: 1.5rem;
+  max-height: 120px;
+  overflow-y: scroll;
+}
+.directory-files ::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 7px;
+  background-color: tomato;
+}
+
+.directory-files ::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
+  background: salmon;
 }
 
 .directory-toggle {
@@ -300,6 +318,7 @@ button:disabled {
   text-align: center;
   line-height: 20px;
   transition: transform 0.2s;
+  margin-right: 10px;
 }
 
 .directory-toggle.expanded {

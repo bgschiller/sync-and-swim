@@ -31,7 +31,9 @@ function FileTransfer() {
   const [currentFile, setCurrentFile] = useState<string>("");
   const [progress, setProgress] = useState<number>(0);
   const [isTransferring, setIsTransferring] = useState(false);
-  const [transferMode, setTransferMode] = useState<"append" | "replace">("append");
+  const [transferMode, setTransferMode] = useState<"append" | "replace">(
+    "append",
+  );
   const [existingFileCount, setExistingFileCount] = useState<number>(0);
 
   useEffect(() => {
@@ -173,17 +175,20 @@ function FileTransfer() {
             />
           </li>
           <li>
-            Choose the folder representing your headphones (it's probably named
-            something like "/Volumes/OpenSwim")
+            Choose the folder for your headphones (it's probably named something
+            like "/Volumes/OpenSwim")
             <FileChoice
               label="Destination Folder"
               value={destDir}
               onChange={async (path) => {
                 setDestDir(path);
                 if (path) {
-                  const existingFiles = await invoke<AudioFile[]>("deep_list_files", {
-                    path,
-                  });
+                  const existingFiles = await invoke<AudioFile[]>(
+                    "deep_list_files",
+                    {
+                      path,
+                    },
+                  );
                   setExistingFileCount(existingFiles.length);
                 } else {
                   setExistingFileCount(0);
@@ -206,7 +211,8 @@ function FileTransfer() {
                   }
                 />
                 <label htmlFor="append">
-                  Add after existing files ({existingFileCount} file{existingFileCount !== 1 ? 's' : ''})
+                  Add after existing files ({existingFileCount} file
+                  {existingFileCount !== 1 ? "s" : ""})
                 </label>
               </div>
               <div className="radio-option">
@@ -221,7 +227,8 @@ function FileTransfer() {
                   }
                 />
                 <label htmlFor="replace">
-                  Delete existing files first ({existingFileCount} file{existingFileCount !== 1 ? 's' : ''} will be removed)
+                  Delete existing files first ({existingFileCount} file
+                  {existingFileCount !== 1 ? "s" : ""} will be removed)
                 </label>
               </div>
             </div>
@@ -252,7 +259,7 @@ function FileTransfer() {
       <div className="column">
         <div className="file-list">
           <h2>Files to Transfer:</h2>
-          <ul>
+          <ul className="directory-list">
             {Object.entries(
               files.reduce<DirectoryStructure>((acc, file) => {
                 const dir = file.relative_path || "";
@@ -279,12 +286,17 @@ function FileTransfer() {
                           })
                         }
                       >
-                        <span
-                          className={`directory-toggle ${expandedDirs.has(dir) ? "expanded" : ""}`}
-                        >
-                          ▶
+                        <span>
+                          <span
+                            className={`directory-toggle ${expandedDirs.has(dir) ? "expanded" : ""}`}
+                          >
+                            ▶
+                          </span>
+                          {dir}
                         </span>
-                        {dir}/
+                        <span className="directory-count">
+                          {`${dirFiles.length} files`}
+                        </span>
                       </div>
                       <button
                         className="shuffle-button"

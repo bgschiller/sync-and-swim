@@ -5,6 +5,13 @@
   max-width: 1200px;
   margin: 0 auto;
 }
+.directory-count {
+  padding-left: 1rem;
+}
+.directory-title {
+  display: flex;
+  justify-content: space-between;
+}
 
 .column {
   flex: 1;
@@ -18,7 +25,6 @@
   flex: 2;
   background: rgba(0, 0, 0, 0.05);
   border-radius: 8px;
-  padding: 1rem;
 }
 
 .controls {
