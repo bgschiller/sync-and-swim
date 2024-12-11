@@ -1,0 +1,32 @@
+.file-choice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  background: white;
+  min-height: 2.5rem;
+}
+
+.file-choice:hover {
+  border-color: #646cff;
+}
+
+.file-choice-value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-choice-button {
+  padding: 0.5rem;
+  line-height: 1;
+}
+
+.file-choice-placeholder {
+  color: #666;
+}

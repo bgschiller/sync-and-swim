@@ -31,7 +31,9 @@ function FileTransfer() {
   const [currentFile, setCurrentFile] = useState<string>("");
   const [progress, setProgress] = useState<number>(0);
   const [isTransferring, setIsTransferring] = useState(false);
-  const [transferMode, setTransferMode] = useState<'append' | 'replace'>('append');
+  const [transferMode, setTransferMode] = useState<"append" | "replace">(
+    "append",
+  );
 
   useEffect(() => {
     const setupListener = async () => {
@@ -122,10 +124,10 @@ function FileTransfer() {
     }
     try {
       setIsTransferring(true);
-      await invoke("copy_files", { 
-        files, 
+      await invoke("copy_files", {
+        files,
         destPath: destDir,
-        mode: transferMode 
+        mode: transferMode,
       });
       alert("Files transferred successfully!");
     } catch (error) {
@@ -181,6 +183,7 @@ function FileTransfer() {
             />
           </li>
           <li>
+            Choose whether to
             <div className="radio-group">
               <div className="radio-option">
                 <input
@@ -188,8 +191,10 @@ function FileTransfer() {
                   id="append"
                   name="transferMode"
                   value="append"
-                  checked={transferMode === 'append'}
-                  onChange={(e) => setTransferMode(e.target.value as 'append' | 'replace')}
+                  checked={transferMode === "append"}
+                  onChange={(e) =>
+                    setTransferMode(e.target.value as "append" | "replace")
+                  }
                 />
                 <label htmlFor="append">Add after existing files</label>
               </div>
@@ -199,10 +204,12 @@ function FileTransfer() {
                   id="replace"
                   name="transferMode"
                   value="replace"
-                  checked={transferMode === 'replace'}
-                  onChange={(e) => setTransferMode(e.target.value as 'append' | 'replace')}
+                  checked={transferMode === "replace"}
+                  onChange={(e) =>
+                    setTransferMode(e.target.value as "append" | "replace")
+                  }
                 />
-                <label htmlFor="replace">Replace existing files</label>
+                <label htmlFor="replace">Delete existing files first</label>
               </div>
             </div>
           </li>

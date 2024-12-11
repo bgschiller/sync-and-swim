@@ -14,10 +14,10 @@ function abbreviatePath(path: string): string {
   if (path.startsWith("/Users/")) {
     path = path.replace(/^\/Users\/[^/]+/, "~");
   }
-  
+
   // Replace common volumes with shorter names
   path = path.replace(/^\/Volumes\/OpenSwim\/?/, "OpenSwim:/");
-  
+
   // If path is still long, keep start and end
   if (path.length > 40) {
     const parts = path.split("/");
@@ -25,7 +25,7 @@ function abbreviatePath(path: string): string {
       return `${parts[0]}/.../${parts[parts.length - 1]}`;
     }
   }
-  
+
   return path;
 }
 
@@ -55,6 +55,7 @@ export function FileChoice({ label, value, onChange }: FileChoiceProps) {
     <button
       className={`file-choice-button ${value ? "file-choice-value" : "file-choice-placeholder"}`}
       onClick={handleSelect}
+      title={value ? "change" : "select"}
     >
       {value ? abbreviatePath(value) : `Click to select ${label.toLowerCase()}`}
     </button>
