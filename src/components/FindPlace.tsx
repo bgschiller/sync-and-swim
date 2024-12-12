@@ -17,7 +17,7 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
   const [files, setFiles] = useState<AudioFile[]>([]);
   const [audioDir, setAudioDir] = useState<string>("");
   const [isPlaying, setIsPlaying] = useState(false);
-  const [percentage, setPercentage] = useState<number>(0);
+  const [percentage, setPercentage] = useState<number>(50);
 
   return (
     <div className="find-place">
@@ -28,7 +28,10 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
             Select a directory containing your audiobooks or podcasts. We'll
             skip around to find the last place you remember. This works best if
             your audio files are small, so you may want to{" "}
-            <a href="#" onClick={() => onSelectOption?.('split-files')}>Split them first</a>
+            <a href="#" onClick={() => onSelectOption?.("split")}>
+              split them first
+            </a>
+            .
           </p>
 
           <div className="file-selection">
@@ -52,7 +55,9 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
             <>
               <div className="percentage-input">
                 <label htmlFor="percentage">
-                  How far through were you? (%)
+                  How far through would you guess you are, as a percentage?
+                  Leave this at 50 if you like, but it may help you avoid
+                  spoilers.
                 </label>
                 <input
                   type="number"

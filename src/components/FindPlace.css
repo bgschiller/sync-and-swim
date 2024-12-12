@@ -3,6 +3,9 @@
   max-width: 1200px;
   margin: 0 auto;
 }
+.find-place .file-list {
+  max-height: unset;
+}
 
 .split-files-columns {
   display: grid;
