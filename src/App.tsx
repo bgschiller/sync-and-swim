@@ -3,6 +3,7 @@ import "./App.css";
 import Menu from "./components/Menu";
 import FileTransfer from "./components/FileTransfer";
 import SplitFiles from "./components/SplitFiles";
+import FindPlace from "./components/FindPlace";
 
 const menuOptions = [
   {
@@ -18,6 +19,13 @@ const menuOptions = [
     description:
       "Split audiobooks or podcasts into shorter pieces. This makes it easier to skip forward and backward just a bit without a screen",
     component: SplitFiles,
+  },
+  {
+    id: "findplace",
+    title: "Find Your Place in Audiobooks",
+    description:
+      "Lost your place in an audiobook or podcast? This tool helps you quickly find where you left off by playing short segments.",
+    component: FindPlace,
   },
 ];
 
