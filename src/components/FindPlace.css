@@ -179,3 +179,11 @@
 .feedback-btn:hover {
   opacity: 0.9;
 }
+
+.feedback-btn.start-over {
+  margin-top: 1rem;
+  background-color: #607d8b;
+  color: white;
+  width: auto;
+  padding: 8px 16px;
+}

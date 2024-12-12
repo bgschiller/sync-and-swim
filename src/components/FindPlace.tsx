@@ -147,6 +147,18 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                         Not sure
                       </button>
                     </div>
+                    <button
+                      onClick={() => {
+                        // Reset to initial state
+                        const initialIndex = Math.floor((percentage / 100) * files.length);
+                        setCurrentFileIndex(initialIndex);
+                        setCurrentGuess(percentage);
+                        setSearchRange({ start: 0, end: 100 });
+                      }}
+                      className="feedback-btn start-over"
+                    >
+                      Start Over
+                    </button>
                   </div>
                 </div>
               )}
