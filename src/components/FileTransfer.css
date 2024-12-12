@@ -1,10 +1,9 @@
-.file-transfer-container {
+.file-transfer-columns {
   display: flex;
   gap: 2rem;
   padding: 1rem;
   max-width: 1200px;
   margin: 0 auto;
-  min-height: calc(100vh - 2rem);
 }
 .directory-count {
   padding-left: 1rem;
@@ -24,7 +23,6 @@
 
 .column:last-child {
   flex: 3;
-  background: rgba(0, 0, 0, 0.05);
   border-radius: 8px;
 }
 
@@ -57,12 +55,13 @@
 }
 
 .transfer-button {
-  margin-top: 1rem;
+  display: block;
+  margin: 1rem auto;
   width: fit-content;
 }
 
 .progress {
-  margin: 1rem 0;
+  margin: 1rem 4rem;
 }
 
 .progress-bar {
@@ -76,5 +75,29 @@
 .progress-bar-fill {
   height: 100%;
   background: #646cff;
+  transition: width 0.3s ease;
+}
+.progress {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+}
+
+.progress p {
+  margin: 0.5rem 0;
+  color: var(--text-color);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: var(--border-color);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 0.5rem;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background-color: var(--primary-color);
   transition: width 0.3s ease;
 }
