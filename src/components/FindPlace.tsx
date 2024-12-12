@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState } from "react";
 import { invoke, convertFileSrc } from "@tauri-apps/api/core";
 import { FileChoice } from "./FileChoice";
 import "./FindPlace.css";
@@ -13,16 +13,119 @@ interface FindPlaceProps {
   onSelectOption?: (optionId: string) => void;
 }
 
-function FindPlace({ onSelectOption }: FindPlaceProps) {
-  const [files, setFiles] = useState<AudioFile[]>([]);
-  const [audioDir, setAudioDir] = useState<string>("");
-  const [currentFileIndex, setCurrentFileIndex] = useState<number | null>(null);
-  const [percentage, setPercentage] = useState<number>(50);
-  const [currentGuess, setCurrentGuess] = useState<number>(0);
+interface AudioBinarySearchProps {
+  files: AudioFile[];
+  percentage: number;
+  onStartOver: () => void;
+}
+
+function AudioBinarySearch({ files, percentage, onStartOver }: AudioBinarySearchProps) {
+  const [currentFileIndex, setCurrentFileIndex] = useState<number>(() => 
+    Math.floor((percentage / 100) * files.length)
+  );
+  const [currentGuess, setCurrentGuess] = useState<number>(percentage);
   const [searchRange, setSearchRange] = useState<{
     start: number;
     end: number;
   }>({ start: 0, end: 100 });
+
+  return (
+    <div className="playback-section">
+      <div className="current-file">
+        Playing: {files[currentFileIndex].name}
+      </div>
+      <audio
+        controls
+        key={files[currentFileIndex].path}
+        src={convertFileSrc(files[currentFileIndex].path)}
+        style={{ width: "100%", marginBottom: "1rem" }}
+      />
+      <div className="feedback-controls">
+        <p>
+          Does this part sound familiar?{" "}
+          <span className="steps-remaining">
+            Approximately{" "}
+            {Math.ceil(Math.log2(searchRange.end - searchRange.start))}{" "}
+            more steps needed
+          </span>
+        </p>
+        <div className="feedback-buttons">
+          <button
+            onClick={() => {
+              const newStart = currentGuess;
+              const newEnd = searchRange.end;
+              const newGuess = Math.floor((newStart + newEnd) / 2);
+              setSearchRange({ start: newStart, end: newEnd });
+              setCurrentGuess(newGuess);
+
+              const startFileIndex = Math.floor((newStart / 100) * files.length);
+              const endFileIndex = Math.floor((newEnd / 100) * files.length);
+              const guessFileIndex = Math.floor((newGuess / 100) * files.length);
+
+              if (endFileIndex - startFileIndex === 1 && currentFileIndex === startFileIndex) {
+                setCurrentFileIndex(endFileIndex);
+              } else if (endFileIndex - startFileIndex <= 1) {
+                setCurrentFileIndex(startFileIndex);
+              } else if (guessFileIndex === currentFileIndex) {
+                setCurrentFileIndex(Math.min(currentFileIndex + 1, endFileIndex));
+              } else {
+                setCurrentFileIndex(guessFileIndex);
+              }
+            }}
+            className="feedback-btn yes"
+          >
+            Yes, I remember this
+          </button>
+          <button
+            onClick={() => {
+              const newStart = searchRange.start;
+              const newEnd = currentGuess;
+              const newGuess = Math.floor((newStart + newEnd) / 2);
+              setSearchRange({ start: newStart, end: newEnd });
+              setCurrentGuess(newGuess);
+
+              const startFileIndex = Math.floor((newStart / 100) * files.length);
+              const endFileIndex = Math.floor((newEnd / 100) * files.length);
+              const guessFileIndex = Math.floor((newGuess / 100) * files.length);
+
+              if (endFileIndex - startFileIndex <= 1) {
+                setCurrentFileIndex(startFileIndex);
+              } else if (guessFileIndex === currentFileIndex) {
+                setCurrentFileIndex(Math.max(currentFileIndex - 1, startFileIndex));
+              } else {
+                setCurrentFileIndex(guessFileIndex);
+              }
+            }}
+            className="feedback-btn no"
+          >
+            No, don't remember this
+          </button>
+          <button
+            onClick={() => {
+              const newIndex = Math.max(0, currentFileIndex - 1);
+              setCurrentFileIndex(newIndex);
+            }}
+            className="feedback-btn unsure"
+          >
+            Not sure
+          </button>
+        </div>
+        <button
+          onClick={onStartOver}
+          className="feedback-btn start-over"
+        >
+          Start Over
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function FindPlace({ onSelectOption }: FindPlaceProps) {
+  const [files, setFiles] = useState<AudioFile[]>([]);
+  const [audioDir, setAudioDir] = useState<string>("");
+  const [percentage, setPercentage] = useState<number>(50);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
 
   return (
     <div className="find-place">
