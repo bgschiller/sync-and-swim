@@ -1,0 +1,44 @@
+.split-files-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.split-files-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.chunk-duration {
+  margin: 20px 0;
+}
+
+.chunk-duration input {
+  width: 80px;
+  padding: 8px;
+  margin-left: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.controls {
+  list-style-type: none;
+  padding: 0;
+}
+
+.controls li {
+  margin-bottom: 20px;
+}
+
+.file-progress {
+  font-size: 0.9em;
+  color: #666;
+  margin-left: 20px;
+}
+
+.progress-value {
+  color: #2196F3;
+  font-weight: bold;
+}
