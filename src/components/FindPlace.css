@@ -4,7 +4,8 @@
   margin: 0 auto;
 }
 .find-place .file-list {
-  max-height: 100%;
+  max-height: unset;
+  height: fit-content;
 }
 
 .split-files-columns {
@@ -39,8 +40,8 @@
 }
 
 .percentage-input input {
-  width: 100px;
-  padding: 8px;
+  display: inline;
+  padding: 0;
   border: 1px solid #ccc;
   border-radius: 4px;
   text-align: center;
