@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
-import { convertFileSrc } from "@tauri-apps/api/tauri";
+import { invoke, convertFileSrc } from "@tauri-apps/api/core";
 import { FileChoice } from "./FileChoice";
 import "./FindPlace.css";
 
@@ -106,7 +105,9 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                           const newGuess = Math.floor((newStart + newEnd) / 2);
                           setSearchRange({ start: newStart, end: newEnd });
                           setCurrentGuess(newGuess);
-                          setCurrentFileIndex(Math.floor((newGuess / 100) * files.length));
+                          setCurrentFileIndex(
+                            Math.floor((newGuess / 100) * files.length),
+                          );
                         }}
                         className="feedback-btn no"
                       >

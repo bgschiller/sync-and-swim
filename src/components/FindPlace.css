@@ -4,7 +4,7 @@
   margin: 0 auto;
 }
 .find-place .file-list {
-  max-height: unset;
+  max-height: 100%;
 }
 
 .split-files-columns {
