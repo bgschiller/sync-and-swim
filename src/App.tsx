@@ -47,7 +47,12 @@ function App() {
             </button>
             {selectedOption.title && <h2>{selectedOption.title}</h2>}
           </header>
-          <selectedOption.component />
+          <selectedOption.component 
+            onSelectOption={(optionId) => {
+              const option = menuOptions.find(opt => opt.id === optionId);
+              if (option) setSelectedOption(option);
+            }}
+          />
         </div>
       ) : (
         <Menu options={menuOptions} onSelect={setSelectedOption} />
