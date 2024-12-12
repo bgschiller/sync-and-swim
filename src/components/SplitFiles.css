@@ -11,6 +11,31 @@
   margin-bottom: 20px;
 }
 
+.file-list ul {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 10px;
+  list-style-type: none;
+}
+
+.file-list ul::-webkit-scrollbar {
+  width: 8px;
+}
+
+.file-list ul::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.file-list ul::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.file-list ul::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
 .chunk-duration {
   margin: 20px 0;
 }

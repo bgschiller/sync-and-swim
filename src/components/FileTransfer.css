@@ -26,6 +26,30 @@
   border-radius: 8px;
 }
 
+.file-list ul, .directory-list {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.file-list ul::-webkit-scrollbar, .directory-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.file-list ul::-webkit-scrollbar-track, .directory-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.file-list ul::-webkit-scrollbar-thumb, .directory-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.file-list ul::-webkit-scrollbar-thumb:hover, .directory-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
 .controls {
   display: flex;
   flex-direction: column;
