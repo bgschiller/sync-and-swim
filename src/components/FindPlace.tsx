@@ -21,7 +21,10 @@ function FindPlace() {
         <div className="column">
           <h2>Find Your Place</h2>
           <p>
-            Select a directory containing your audiobooks or podcasts to find where you left off.
+            Select a directory containing your audiobooks or podcasts. We'll
+            skip around to find the last place you remember. This works best if
+            your audio files are small, so you may want to{" "}
+            <a href="#">Split them first</a>
           </p>
 
           <div className="file-selection">
@@ -30,9 +33,12 @@ function FindPlace() {
               value={audioDir}
               onChange={async (path) => {
                 setAudioDir(path);
-                const audioFiles = await invoke<AudioFile[]>("list_audio_files", {
-                  path,
-                });
+                const audioFiles = await invoke<AudioFile[]>(
+                  "list_audio_files",
+                  {
+                    path,
+                  },
+                );
                 setFiles(audioFiles);
               }}
             />
@@ -41,21 +47,26 @@ function FindPlace() {
           {audioDir && (
             <>
               <div className="percentage-input">
-              <label htmlFor="percentage">How far through were you? (%)</label>
-              <input
-                type="number"
-                id="percentage"
-                min="0"
-                max="100"
-                value={percentage}
-                onChange={(e) => setPercentage(Number(e.target.value))}
-              />
-            </div>
-            <div className="playback-controls">
-              <button className="play-btn" onClick={() => setIsPlaying(!isPlaying)}>
-                {isPlaying ? "Pause" : "Play"}
-              </button>
-              {/* TODO: Add skip forward/backward controls */}
+                <label htmlFor="percentage">
+                  How far through were you? (%)
+                </label>
+                <input
+                  type="number"
+                  id="percentage"
+                  min="0"
+                  max="100"
+                  value={percentage}
+                  onChange={(e) => setPercentage(Number(e.target.value))}
+                />
+              </div>
+              <div className="playback-controls">
+                <button
+                  className="play-btn"
+                  onClick={() => setIsPlaying(!isPlaying)}
+                >
+                  {isPlaying ? "Pause" : "Play"}
+                </button>
+                {/* TODO: Add skip forward/backward controls */}
               </div>
             </>
           )}
