@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { invoke, convertFileSrc } from "@tauri-apps/api/core";
 import { FileChoice } from "./FileChoice";
 import "./FindPlace.css";
@@ -148,7 +148,18 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                     }
                   }
                   return (
-                    <li key={file.path} className={`file-status-${status}`}>
+                    <li 
+                      key={file.path} 
+                      className={`file-status-${status}`}
+                      ref={index === currentFileIndex ? (el) => {
+                        if (el) {
+                          el.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center' 
+                          });
+                        }
+                      } : undefined}
+                    >
                       {file.name}
                     </li>
                   );

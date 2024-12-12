@@ -65,6 +65,7 @@
   border-radius: 4px;
   max-height: 400px;
   overflow-y: auto;
+  scroll-behavior: smooth;
 }
 
 .file-list h3 {
