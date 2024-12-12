@@ -77,6 +77,8 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                   </div>
                   <audio 
                     controls 
+                    autoPlay
+                    key={files[currentFileIndex].path} // Force recreation when source changes
                     src={convertFileSrc(files[currentFileIndex].path)}
                     style={{ width: '100%', marginBottom: '1rem' }}
                   />
