@@ -102,8 +102,11 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                           const endFileIndex = Math.floor((newEnd / 100) * files.length);
                           const guessFileIndex = Math.floor((newGuess / 100) * files.length);
                           
-                          // If we're down to two or fewer files, always play the first file in range
-                          if (endFileIndex - startFileIndex <= 1) {
+                          // If we're down to two files and user recognizes the first one,
+                          // play the second file since that's likely where they left off
+                          if (endFileIndex - startFileIndex === 1 && currentFileIndex === startFileIndex) {
+                            setCurrentFileIndex(endFileIndex);
+                          } else if (endFileIndex - startFileIndex <= 1) {
                             setCurrentFileIndex(startFileIndex);
                           } else if (guessFileIndex === currentFileIndex) {
                             // If the new guess would play the same file, force moving forward
