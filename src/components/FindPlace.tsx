@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { convertFileSrc } from "@tauri-apps/api/tauri";
 import { FileChoice } from "./FileChoice";
 import "./FindPlace.css";
 
@@ -77,7 +78,7 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                   </div>
                   <audio 
                     controls 
-                    src={`file://${files[currentFileIndex].path}`}
+                    src={convertFileSrc(files[currentFileIndex].path)}
                     style={{ width: '100%', marginBottom: '1rem' }}
                   />
                   <div className="feedback-controls">
