@@ -1,44 +1,24 @@
 import { useState } from "react";
-import { open } from "@tauri-apps/plugin-dialog";
+import { FileChoice } from "./FileChoice";
 import "./FindPlace.css";
 
 function FindPlace() {
-  const [currentFile, setCurrentFile] = useState<string>("");
+  const [audioDir, setAudioDir] = useState<string>("");
   const [isPlaying, setIsPlaying] = useState(false);
-
-  const handleFileSelect = async () => {
-    const selected = await open({
-      multiple: false,
-      filters: [
-        {
-          name: "Audio",
-          extensions: ["mp3", "m4a", "wav", "aac"],
-        },
-      ],
-    });
-
-    if (selected && typeof selected === "string") {
-      setCurrentFile(selected);
-    }
-  };
 
   return (
     <div className="find-place">
       <h2>Find Your Place</h2>
       <p>
-        Select an audio file to find where you left off in your audiobook or
-        podcast.
+        Select a directory containing your audiobooks or podcasts to find where you left off.
       </p>
 
       <div className="file-selection">
-        <button onClick={handleFileSelect} className="select-file-btn">
-          Select Audio File
-        </button>
-        {currentFile && (
-          <div className="selected-file">
-            <p>Selected: {currentFile.split("/").pop()}</p>
-          </div>
-        )}
+        <FileChoice
+          label="Audio Directory"
+          value={audioDir}
+          onChange={setAudioDir}
+        />
       </div>
 
       {currentFile && (
