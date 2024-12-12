@@ -18,6 +18,28 @@
 }
 
 
+.percentage-input {
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.percentage-input input {
+  width: 100px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.percentage-input label {
+  font-size: 1rem;
+  color: #666;
+}
+
 .playback-controls {
   display: flex;
   gap: 1rem;
