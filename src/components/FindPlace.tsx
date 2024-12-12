@@ -181,138 +181,23 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                   />
                 </label>
               </div>
-              {files.length > 0 && (
-                <div className="playback-section">
-                  <div className="current-file">
-                    Playing: {files[currentFileIndex].name}
-                  </div>
-                  <audio
-                    controls
-                    autoPlay
-                    key={files[currentFileIndex].path} // Force recreation when source changes
-                    src={
-                      currentFileIndex &&
-                      convertFileSrc(files[currentFileIndex].path)
-                    }
-                    style={{ width: "100%", marginBottom: "1rem" }}
-                  />
-                  <div className="feedback-controls">
-                    <p>
-                      Does this part sound familiar?{" "}
-                      <span className="steps-remaining">
-                        Approximately{" "}
-                        {Math.ceil(
-                          Math.log2(searchRange.end - searchRange.start),
-                        )}{" "}
-                        more steps needed
-                      </span>
-                    </p>
-                    <div className="feedback-buttons">
-                      <button
-                        onClick={() => {
-                          // If they remember this part, search in later files
-                          const newStart = currentGuess;
-                          const newEnd = searchRange.end;
-                          const newGuess = Math.floor((newStart + newEnd) / 2);
-                          setSearchRange({ start: newStart, end: newEnd });
-                          setCurrentGuess(newGuess);
-
-                          // Calculate the range of files in the new search space
-                          const startFileIndex = Math.floor(
-                            (newStart / 100) * files.length,
-                          );
-                          const endFileIndex = Math.floor(
-                            (newEnd / 100) * files.length,
-                          );
-                          const guessFileIndex = Math.floor(
-                            (newGuess / 100) * files.length,
-                          );
-
-                          // If we're down to two files and user recognizes the first one,
-                          // play the second file since that's likely where they left off
-                          if (
-                            endFileIndex - startFileIndex === 1 &&
-                            currentFileIndex === startFileIndex
-                          ) {
-                            setCurrentFileIndex(endFileIndex);
-                          } else if (endFileIndex - startFileIndex <= 1) {
-                            setCurrentFileIndex(startFileIndex);
-                          } else if (guessFileIndex === currentFileIndex) {
-                            // If the new guess would play the same file, force moving forward
-                            setCurrentFileIndex(
-                              Math.min(currentFileIndex + 1, endFileIndex),
-                            );
-                          } else {
-                            setCurrentFileIndex(guessFileIndex);
-                          }
-                        }}
-                        className="feedback-btn yes"
-                      >
-                        Yes, I remember this
-                      </button>
-                      <button
-                        onClick={() => {
-                          // If they don't remember, search in earlier files
-                          const newStart = searchRange.start;
-                          const newEnd = currentGuess;
-                          const newGuess = Math.floor((newStart + newEnd) / 2);
-                          setSearchRange({ start: newStart, end: newEnd });
-                          setCurrentGuess(newGuess);
-
-                          // Calculate the range of files in the new search space
-                          const startFileIndex = Math.floor(
-                            (newStart / 100) * files.length,
-                          );
-                          const endFileIndex = Math.floor(
-                            (newEnd / 100) * files.length,
-                          );
-                          const guessFileIndex = Math.floor(
-                            (newGuess / 100) * files.length,
-                          );
-
-                          // If we're down to two or fewer files, always play the first file in range
-                          if (endFileIndex - startFileIndex <= 1) {
-                            setCurrentFileIndex(startFileIndex);
-                          } else if (guessFileIndex === currentFileIndex) {
-                            // If the new guess would play the same file, force moving backward
-                            setCurrentFileIndex(
-                              Math.max(currentFileIndex - 1, startFileIndex),
-                            );
-                          } else {
-                            setCurrentFileIndex(guessFileIndex);
-                          }
-                        }}
-                        className="feedback-btn no"
-                      >
-                        No, don't remember this
-                      </button>
-                      <button
-                        onClick={() => {
-                          // If unsure, try the previous file
-                          const newIndex = Math.max(0, currentFileIndex - 1);
-                          setCurrentFileIndex(newIndex);
-                        }}
-                        className="feedback-btn unsure"
-                      >
-                        Not sure
-                      </button>
-                    </div>
-                    <button
-                      onClick={() => {
-                        // Reset to initial state
-                        const initialIndex = Math.floor(
-                          (percentage / 100) * files.length,
-                        );
-                        setCurrentFileIndex(initialIndex);
-                        setCurrentGuess(percentage);
-                        setSearchRange({ start: 0, end: 100 });
-                      }}
-                      className="feedback-btn start-over"
-                    >
-                      Start Over
-                    </button>
-                  </div>
-                </div>
+              {files.length > 0 && !isSearching && (
+                <button
+                  onClick={() => setIsSearching(true)}
+                  className="feedback-btn yes"
+                  style={{ marginTop: '1rem' }}
+                >
+                  Find my place
+                </button>
+              )}
+              {files.length > 0 && isSearching && (
+                <AudioBinarySearch
+                  files={files}
+                  percentage={percentage}
+                  onStartOver={() => {
+                    setIsSearching(false);
+                  }}
+                />
               )}
             </>
           )}
