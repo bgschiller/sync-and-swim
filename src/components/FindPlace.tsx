@@ -96,7 +96,17 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                           const newGuess = Math.floor((newStart + newEnd) / 2);
                           setSearchRange({ start: newStart, end: newEnd });
                           setCurrentGuess(newGuess);
-                          setCurrentFileIndex(Math.floor((newGuess / 100) * files.length));
+                          
+                          // Calculate the range of files in the new search space
+                          const startFileIndex = Math.floor((newStart / 100) * files.length);
+                          const endFileIndex = Math.floor((newEnd / 100) * files.length);
+                          
+                          // If we're down to two or fewer files, play the first one
+                          if (endFileIndex - startFileIndex <= 1) {
+                            setCurrentFileIndex(startFileIndex);
+                          } else {
+                            setCurrentFileIndex(Math.floor((newGuess / 100) * files.length));
+                          }
                         }}
                         className="feedback-btn yes"
                       >
@@ -110,9 +120,17 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                           const newGuess = Math.floor((newStart + newEnd) / 2);
                           setSearchRange({ start: newStart, end: newEnd });
                           setCurrentGuess(newGuess);
-                          setCurrentFileIndex(
-                            Math.floor((newGuess / 100) * files.length),
-                          );
+                          
+                          // Calculate the range of files in the new search space
+                          const startFileIndex = Math.floor((newStart / 100) * files.length);
+                          const endFileIndex = Math.floor((newEnd / 100) * files.length);
+                          
+                          // If we're down to two or fewer files, play the first one
+                          if (endFileIndex - startFileIndex <= 1) {
+                            setCurrentFileIndex(startFileIndex);
+                          } else {
+                            setCurrentFileIndex(Math.floor((newGuess / 100) * files.length));
+                          }
                         }}
                         className="feedback-btn no"
                       >
