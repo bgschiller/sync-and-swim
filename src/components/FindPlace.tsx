@@ -117,59 +117,6 @@ function AudioBinarySearch({ files, percentage, onStartOver }: AudioBinarySearch
           Start Over
         </button>
       </div>
-      <div className="column">
-        <div className="file-list">
-          <h2>Files in Directory:</h2>
-          <ul>
-            {files.map((file, index) => {
-              const filePercentage = (index / files.length) * 100;
-              let status = "inactive";
-              if (
-                filePercentage >= searchRange.start &&
-                filePercentage <= searchRange.end
-              ) {
-                status = "active";
-                if (index === currentFileIndex) {
-                  status = "current";
-                }
-              }
-              const handleFileClick = () => {
-                const filePercentage = (index / files.length) * 100;
-                // Expand search range if needed
-                const newRange = {
-                  start: Math.min(searchRange.start, filePercentage),
-                  end: Math.max(searchRange.end, filePercentage),
-                };
-                setSearchRange(newRange);
-                setCurrentGuess(filePercentage);
-                setCurrentFileIndex(index);
-              };
-
-              return (
-                <li
-                  key={file.path}
-                  className={`file-status-${status}`}
-                  onClick={handleFileClick}
-                  ref={
-                    index === currentFileIndex
-                      ? (el) => {
-                          if (el) {
-                            el.scrollIntoView({
-                              behavior: "smooth",
-                              block: "center",
-                            });
-                          }
-                        }
-                      : undefined
-                  }
-                >
-                  {file.name}
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      </div>
     </div>
   );
 }
@@ -255,9 +202,51 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
             <h2>Files in Directory:</h2>
             {files.length > 0 ? (
               <ul>
-                {files.map((file) => (
-                  <li key={file.path}>{file.name}</li>
-                ))}
+                {files.map((file, index) => {
+                  const filePercentage = (index / files.length) * 100;
+                  let status = "inactive";
+                  if (isSearching && 
+                      filePercentage >= searchRange.start &&
+                      filePercentage <= searchRange.end
+                  ) {
+                    status = "active";
+                    if (index === currentFileIndex) {
+                      status = "current";
+                    }
+                  }
+                  const handleFileClick = () => {
+                    if (!isSearching) return;
+                    const filePercentage = (index / files.length) * 100;
+                    setSearchRange({
+                      start: Math.min(searchRange.start, filePercentage),
+                      end: Math.max(searchRange.end, filePercentage),
+                    });
+                    setCurrentGuess(filePercentage);
+                    setCurrentFileIndex(index);
+                  };
+
+                  return (
+                    <li
+                      key={file.path}
+                      className={`file-status-${status}`}
+                      onClick={handleFileClick}
+                      ref={
+                        index === currentFileIndex && isSearching
+                          ? (el) => {
+                              if (el) {
+                                el.scrollIntoView({
+                                  behavior: "smooth",
+                                  block: "center",
+                                });
+                              }
+                            }
+                          : undefined
+                      }
+                    >
+                      {file.name}
+                    </li>
+                  );
+                })}
               </ul>
             ) : (
               <p>No audio files selected</p>
