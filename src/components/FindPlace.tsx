@@ -17,17 +17,22 @@ interface AudioBinarySearchProps {
   files: AudioFile[];
   percentage: number;
   onStartOver: () => void;
+  currentFileIndex: number;
+  setCurrentFileIndex: (index: number) => void;
+  searchRange: { start: number; end: number };
+  setSearchRange: (range: { start: number; end: number }) => void;
 }
 
-function AudioBinarySearch({ files, percentage, onStartOver }: AudioBinarySearchProps) {
-  const [currentFileIndex, setCurrentFileIndex] = useState<number>(() => 
-    Math.floor((percentage / 100) * files.length)
-  );
+function AudioBinarySearch({ 
+  files, 
+  percentage, 
+  onStartOver,
+  currentFileIndex,
+  setCurrentFileIndex,
+  searchRange,
+  setSearchRange
+}: AudioBinarySearchProps) {
   const [currentGuess, setCurrentGuess] = useState<number>(percentage);
-  const [searchRange, setSearchRange] = useState<{
-    start: number;
-    end: number;
-  }>({ start: 0, end: 100 });
 
   return (
     <div className="playback-section">
@@ -126,6 +131,11 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
   const [audioDir, setAudioDir] = useState<string>("");
   const [percentage, setPercentage] = useState<number>(50);
   const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [currentFileIndex, setCurrentFileIndex] = useState<number>(0);
+  const [searchRange, setSearchRange] = useState<{
+    start: number;
+    end: number;
+  }>({ start: 0, end: 100 });
 
   return (
     <div className="find-place">
@@ -189,8 +199,13 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                 <AudioBinarySearch
                   files={files}
                   percentage={percentage}
+                  currentFileIndex={currentFileIndex}
+                  setCurrentFileIndex={setCurrentFileIndex}
+                  searchRange={searchRange}
+                  setSearchRange={setSearchRange}
                   onStartOver={() => {
                     setIsSearching(false);
+                    setSearchRange({ start: 0, end: 100 });
                   }}
                 />
               )}
