@@ -24,7 +24,7 @@
 
 .find-place p {
   color: #666;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 .file-selection {
@@ -32,7 +32,6 @@
 }
 
 .percentage-input {
-  margin-bottom: 2rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -91,7 +90,7 @@
 }
 
 .playback-section {
-  margin-top: 2rem;
+  margin-top: 1rem;
   padding: 1rem;
   background: #f5f5f5;
   border-radius: 8px;
