@@ -131,7 +131,7 @@ async fn split_audio_files(
 
         // Convert chunk_minutes to seconds for segment_audio
         let segment_time = (chunk_minutes * 60) as i32;
-        
+
         // Call segment_audio for each file with progress tracking
         audio_segment::segment_audio(
             &file.path,
@@ -139,8 +139,9 @@ async fn split_audio_files(
             segment_time,
             &window,
             index,
-            files.len()
-        ).map_err(|e| format!("Failed to split {}: {}", file.name, e))?;
+            files.len(),
+        )
+        .map_err(|e| format!("Failed to split {}: {}", file.name, e))?;
 
         // Emit progress completion
         window
@@ -162,8 +163,10 @@ async fn split_audio_files(
 async fn copy_files(
     files: Vec<AudioFile>,
     dest_path: &str,
+    mode: &str,
     window: tauri::Window,
 ) -> Result<(), String> {
+    // If mode is "replace", delete the destination directory first. AI!
     let total = files.len();
 
     for (index, file) in files.into_iter().enumerate() {
