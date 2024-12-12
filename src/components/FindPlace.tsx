@@ -207,12 +207,7 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                   },
                 );
                 setFiles(audioFiles);
-                const initialIndex = Math.floor(
-                  (percentage / 100) * audioFiles.length,
-                );
-                setCurrentFileIndex(initialIndex);
-                setCurrentGuess(percentage);
-                setSearchRange({ start: 0, end: 100 });
+                setFiles(audioFiles);
               }}
             />
           </div>
