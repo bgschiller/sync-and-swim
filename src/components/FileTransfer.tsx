@@ -137,6 +137,14 @@ function FileTransfer() {
       setIsTransferring(false);
       setProgress(0);
       setCurrentFile("");
+      
+      // Refresh existing file count after transfer
+      if (destDir) {
+        const existingFiles = await invoke<AudioFile[]>("deep_list_files", {
+          path: destDir,
+        });
+        setExistingFileCount(existingFiles.length);
+      }
     }
   }
 
