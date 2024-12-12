@@ -15,7 +15,6 @@ interface FindPlaceProps {
 
 interface AudioBinarySearchProps {
   files: AudioFile[];
-  percentage: number;
   onStartOver: () => void;
   currentFileIndex: number;
   setCurrentFileIndex: (index: number) => void;
@@ -25,14 +24,13 @@ interface AudioBinarySearchProps {
 
 function AudioBinarySearch({ 
   files, 
-  percentage, 
   onStartOver,
   currentFileIndex,
   setCurrentFileIndex,
   searchRange,
   setSearchRange
 }: AudioBinarySearchProps) {
-  const [currentGuess, setCurrentGuess] = useState<number>(percentage);
+  const [currentGuess, setCurrentGuess] = useState<number>(50);
 
   return (
     <div className="playback-section">
@@ -129,7 +127,6 @@ function AudioBinarySearch({
 function FindPlace({ onSelectOption }: FindPlaceProps) {
   const [files, setFiles] = useState<AudioFile[]>([]);
   const [audioDir, setAudioDir] = useState<string>("");
-  const [percentage, setPercentage] = useState<number>(50);
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [currentFileIndex, setCurrentFileIndex] = useState<number>(0);
   const [searchRange, setSearchRange] = useState<{
@@ -171,21 +168,6 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
 
           {audioDir && (
             <>
-              <div className="percentage-input">
-                <label htmlFor="percentage">
-                  How far through would you guess you are, as a percentage?
-                  Leave this at 50 if you like, but it may help you avoid
-                  spoilers.
-                  <input
-                    type="number"
-                    id="percentage"
-                    min="0"
-                    max="100"
-                    value={percentage}
-                    onChange={(e) => setPercentage(Number(e.target.value))}
-                  />
-                </label>
-              </div>
               {files.length > 0 && !isSearching && (
                 <button
                   onClick={() => setIsSearching(true)}
@@ -198,7 +180,6 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
               {files.length > 0 && isSearching && (
                 <AudioBinarySearch
                   files={files}
-                  percentage={percentage}
                   currentFileIndex={currentFileIndex}
                   setCurrentFileIndex={setCurrentFileIndex}
                   searchRange={searchRange}

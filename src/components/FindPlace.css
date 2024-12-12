@@ -32,26 +32,6 @@
   margin-bottom: 2rem;
 }
 
-.percentage-input {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.percentage-input input {
-  display: inline;
-  padding: 0;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  text-align: center;
-  font-size: 1rem;
-}
-
-.percentage-input label {
-  font-size: 1rem;
-  color: #666;
-}
 
 .content-columns {
   display: grid;
