@@ -1,8 +1,16 @@
 import { useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
 import { FileChoice } from "./FileChoice";
 import "./FindPlace.css";
 
+interface AudioFile {
+  name: string;
+  path: string;
+  relative_path: string;
+}
+
 function FindPlace() {
+  const [files, setFiles] = useState<AudioFile[]>([]);
   const [audioDir, setAudioDir] = useState<string>("");
   const [isPlaying, setIsPlaying] = useState(false);
   const [percentage, setPercentage] = useState<number>(0);
@@ -18,13 +26,20 @@ function FindPlace() {
         <FileChoice
           label="Audio Directory"
           value={audioDir}
-          onChange={setAudioDir}
+          onChange={async (path) => {
+            setAudioDir(path);
+            const audioFiles = await invoke<AudioFile[]>("list_audio_files", {
+              path,
+            });
+            setFiles(audioFiles);
+          }}
         />
       </div>
 
       {audioDir && (
-        <>
-          <div className="percentage-input">
+        <div className="content-columns">
+          <div className="main-controls">
+            <div className="percentage-input">
             <label htmlFor="percentage">How far through were you? (%)</label>
             <input
               type="number"
@@ -41,7 +56,19 @@ function FindPlace() {
             </button>
             {/* TODO: Add skip forward/backward controls */}
           </div>
-        </>
+          <div className="file-list">
+            <h3>Files in Directory:</h3>
+            {files.length > 0 ? (
+              <ul>
+                {files.map((file) => (
+                  <li key={file.path}>{file.name}</li>
+                ))}
+              </ul>
+            ) : (
+              <p>No audio files found</p>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
