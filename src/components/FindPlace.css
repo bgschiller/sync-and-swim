@@ -1,7 +1,18 @@
 .find-place {
   padding: 20px;
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
+}
+
+.split-files-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.column {
+  min-width: 0;
 }
 
 .find-place h2 {
@@ -16,7 +27,6 @@
 .file-selection {
   margin-bottom: 2rem;
 }
-
 
 .percentage-input {
   margin-bottom: 2rem;

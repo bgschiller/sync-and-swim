@@ -17,29 +17,30 @@ function FindPlace() {
 
   return (
     <div className="find-place">
-      <h2>Find Your Place</h2>
-      <p>
-        Select a directory containing your audiobooks or podcasts to find where you left off.
-      </p>
+      <div className="split-files-columns">
+        <div className="column">
+          <h2>Find Your Place</h2>
+          <p>
+            Select a directory containing your audiobooks or podcasts to find where you left off.
+          </p>
 
-      <div className="file-selection">
-        <FileChoice
-          label="Audio Directory"
-          value={audioDir}
-          onChange={async (path) => {
-            setAudioDir(path);
-            const audioFiles = await invoke<AudioFile[]>("list_audio_files", {
-              path,
-            });
-            setFiles(audioFiles);
-          }}
-        />
-      </div>
+          <div className="file-selection">
+            <FileChoice
+              label="Audio Directory"
+              value={audioDir}
+              onChange={async (path) => {
+                setAudioDir(path);
+                const audioFiles = await invoke<AudioFile[]>("list_audio_files", {
+                  path,
+                });
+                setFiles(audioFiles);
+              }}
+            />
+          </div>
 
-      {audioDir && (
-        <div className="content-columns">
-          <div className="main-controls">
-            <div className="percentage-input">
+          {audioDir && (
+            <>
+              <div className="percentage-input">
               <label htmlFor="percentage">How far through were you? (%)</label>
               <input
                 type="number"
@@ -55,10 +56,13 @@ function FindPlace() {
                 {isPlaying ? "Pause" : "Play"}
               </button>
               {/* TODO: Add skip forward/backward controls */}
-            </div>
-          </div>
+              </div>
+            </>
+          )}
+        </div>
+        <div className="column">
           <div className="file-list">
-            <h3>Files in Directory:</h3>
+            <h2>Files in Directory:</h2>
             {files.length > 0 ? (
               <ul>
                 {files.map((file) => (
@@ -66,11 +70,11 @@ function FindPlace() {
                 ))}
               </ul>
             ) : (
-              <p>No audio files found</p>
+              <p>No audio files selected</p>
             )}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
