@@ -25,7 +25,6 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
     <div className="find-place">
       <div className="split-files-columns">
         <div className="column">
-          <h2>Find Your Place</h2>
           <p>
             Select a directory containing your audiobooks or podcasts. We'll
             skip around to find the last place you remember. This works best if
@@ -112,7 +111,7 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                       >
                         No, don't remember this
                       </button>
-                      <button 
+                      <button
                         onClick={() => {
                           // If unsure, try the previous file
                           const newIndex = Math.max(0, currentFileIndex - 1);
