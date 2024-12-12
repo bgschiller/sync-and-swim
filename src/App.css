@@ -253,7 +253,7 @@ button:disabled {
   padding: 0;
   border: 1px solid var(--border-color);
   border-radius: 4px;
-  max-height: 550px;
+  max-height: 400px;
   overflow: auto;
 }
 
@@ -309,12 +309,14 @@ button:disabled {
   max-height: 120px;
   overflow: auto;
 }
-.directory-files::-webkit-scrollbar {
+.directory-files::-webkit-scrollbar,
+.directory-list::-webkit-scrollbar {
   -webkit-appearance: none;
   width: 7px;
 }
 
-.directory-files::-webkit-scrollbar-thumb {
+.directory-files::-webkit-scrollbar-thumb,
+.directory-list::-webkit-scrollbar-thumb {
   border-radius: 4px;
   background-color: rgba(0, 0, 0, 0.5);
   box-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
@@ -332,30 +334,4 @@ button:disabled {
 
 .directory-toggle.expanded {
   transform: rotate(90deg);
-}
-
-.progress {
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border-color);
-}
-
-.progress p {
-  margin: 0.5rem 0;
-  color: var(--text-color);
-}
-
-.progress-bar {
-  width: 100%;
-  height: 8px;
-  background-color: var(--border-color);
-  border-radius: 4px;
-  overflow: hidden;
-  margin-top: 0.5rem;
-}
-
-.progress-bar-fill {
-  height: 100%;
-  background-color: var(--primary-color);
-  transition: width 0.3s ease;
 }

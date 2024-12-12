@@ -64,6 +64,10 @@
 }
 
 .progress-value {
-  color: #2196F3;
+  color: #2196f3;
   font-weight: bold;
+}
+.ffmpeg-missing-warning {
+  color: red;
+  margin-bottom: 1rem;
 }

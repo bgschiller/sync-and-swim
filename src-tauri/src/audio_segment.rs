@@ -1,9 +1,9 @@
 use anyhow::{Context, Result};
-use std::path::Path;
 use std::fs;
-use std::process::{Command, Stdio};
 use std::io::{BufRead, BufReader};
-use tauri::{Window, Emitter};
+use std::path::Path;
+use std::process::{Command, Stdio};
+use tauri::{Emitter, Window};
 
 #[derive(Clone, serde::Serialize)]
 pub struct SegmentProgress {
@@ -15,12 +15,12 @@ pub struct SegmentProgress {
 }
 
 pub fn segment_audio(
-    input_filename: &str, 
-    output_folder: &str, 
+    input_filename: &str,
+    output_folder: &str,
     segment_time: i32,
     window: &Window,
     index: usize,
-    total: usize
+    total: usize,
 ) -> Result<()> {
     // Ensure output directory exists
     fs::create_dir_all(output_folder)?;
@@ -32,11 +32,7 @@ pub fn segment_audio(
         .context("Invalid input filename")?;
 
     // Create output pattern
-    let output_pattern = format!(
-        "{}/{}_part_%04d.mp3",
-        output_folder,
-        input_name
-    );
+    let output_pattern = format!("{}/{}_part_%04d.mp3", output_folder, input_name);
 
     // Get just the filename for progress reporting
     let file_name = Path::new(input_filename)
@@ -48,11 +44,15 @@ pub fn segment_audio(
     // Run ffmpeg command with output capture
     let mut child = Command::new("ffmpeg")
         .args([
-            "-i", input_filename,
-            "-f", "segment",
-            "-segment_time", &segment_time.to_string(),
-            "-c", "copy",
-            &output_pattern
+            "-i",
+            input_filename,
+            "-f",
+            "segment",
+            "-segment_time",
+            &segment_time.to_string(),
+            "-c",
+            "copy",
+            &output_pattern,
         ])
         .stderr(Stdio::piped())
         .spawn()
@@ -62,49 +62,55 @@ pub fn segment_audio(
     let reader = BufReader::new(stderr);
 
     // Emit initial progress
-    window.emit(
-        "segment-progress",
-        SegmentProgress {
-            file_name: file_name.clone(),
-            progress: 0.0,
-            completed: false,
-            index,
-            total,
-        }
-    ).context("Failed to emit progress")?;
+    window
+        .emit(
+            "segment-progress",
+            SegmentProgress {
+                file_name: file_name.clone(),
+                progress: 0.0,
+                completed: false,
+                index,
+                total,
+            },
+        )
+        .context("Failed to emit progress")?;
 
     // Read ffmpeg output line by line looking for the input file line
     let mut started = false;
     for line in reader.lines() {
         let line = line.context("Failed to read line")?;
-        
+
         // Look for the input file line that indicates processing has started
         if line.contains("Input #0") {
             started = true;
-            window.emit(
-                "segment-progress",
-                SegmentProgress {
-                    file_name: file_name.clone(),
-                    progress: 10.0, // Initial progress
-                    completed: false,
-                    index,
-                    total,
-                }
-            ).context("Failed to emit progress")?;
+            window
+                .emit(
+                    "segment-progress",
+                    SegmentProgress {
+                        file_name: file_name.clone(),
+                        progress: 10.0, // Initial progress
+                        completed: false,
+                        index,
+                        total,
+                    },
+                )
+                .context("Failed to emit progress")?;
         }
-        
+
         // Once we've started, periodically update progress
         if started {
-            window.emit(
-                "segment-progress",
-                SegmentProgress {
-                    file_name: file_name.clone(),
-                    progress: 50.0, // Mid-progress
-                    completed: false,
-                    index,
-                    total,
-                }
-            ).context("Failed to emit progress")?;
+            window
+                .emit(
+                    "segment-progress",
+                    SegmentProgress {
+                        file_name: file_name.clone(),
+                        progress: 50.0, // Mid-progress
+                        completed: false,
+                        index,
+                        total,
+                    },
+                )
+                .context("Failed to emit progress")?;
         }
     }
 
@@ -116,16 +122,18 @@ pub fn segment_audio(
     }
 
     // Emit completion
-    window.emit(
-        "segment-progress",
-        SegmentProgress {
-            file_name,
-            progress: 100.0,
-            completed: true,
-            index,
-            total,
-        }
-    ).context("Failed to emit completion")?;
+    window
+        .emit(
+            "segment-progress",
+            SegmentProgress {
+                file_name,
+                progress: 100.0,
+                completed: true,
+                index,
+                total,
+            },
+        )
+        .context("Failed to emit completion")?;
 
     Ok(())
 }

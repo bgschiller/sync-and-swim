@@ -15,7 +15,7 @@ function SplitFiles() {
   const [destDir, setDestDir] = useState<string>("");
   const [files, setFiles] = useState<AudioFile[]>([]);
   const [chunkMinutes, setChunkMinutes] = useState<number>(3);
-  const [progress, setProgress] = useState<{[key: string]: number}>({});
+  const [progress, setProgress] = useState<{ [key: string]: number }>({});
   const [currentFile, setCurrentFile] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [ffmpegAvailable, setFfmpegAvailable] = useState<boolean | null>(null);
@@ -23,20 +23,20 @@ function SplitFiles() {
   useEffect(() => {
     // Check if ffmpeg is available
     invoke<boolean>("check_ffmpeg")
-      .then(available => setFfmpegAvailable(available))
+      .then((available) => setFfmpegAvailable(available))
       .catch(() => setFfmpegAvailable(false));
 
     const unlisten = listen("segment-progress", (event: any) => {
       const { file_name, progress: fileProgress, completed } = event.payload;
       setCurrentFile(file_name);
-      setProgress(prev => ({
+      setProgress((prev) => ({
         ...prev,
-        [file_name]: completed ? 100 : fileProgress
+        [file_name]: completed ? 100 : fileProgress,
       }));
     });
 
     return () => {
-      unlisten.then(fn => fn());
+      unlisten.then((fn) => fn());
     };
   }, []);
 
@@ -67,14 +67,15 @@ function SplitFiles() {
       <div className="split-files-columns">
         <div className="column">
           {ffmpegAvailable === false && (
-            <div style={{ color: 'red', marginBottom: '1rem' }}>
-              ⚠️ Warning: ffmpeg is not available on your system. File splitting will not work without it.
-              Please install ffmpeg first.
+            <div className="ffmpeg-missing-warning">
+              ⚠️ Warning: ffmpeg is not available on your system. File splitting
+              will not work without it. Please install ffmpeg first.
             </div>
           )}
           <p>
-            Some audio files might be too long for your headphones to handle properly.
-            This tool can split them into smaller chunks of a specified duration.
+            Some audio files might be too long for your headphones to handle
+            properly. This tool can split them into smaller chunks of a
+            specified duration.
           </p>
           <ol className="controls">
             <li>
@@ -112,7 +113,11 @@ function SplitFiles() {
                     min="1"
                     step="1"
                     value={chunkMinutes}
-                    onChange={(e) => setChunkMinutes(Math.max(1, parseInt(e.target.value) || 1))}
+                    onChange={(e) =>
+                      setChunkMinutes(
+                        Math.max(1, parseInt(e.target.value) || 1),
+                      )
+                    }
                   />
                 </label>
               </div>
@@ -129,7 +134,10 @@ function SplitFiles() {
                     {file.name}
                     {currentFile === file.name && (
                       <span className="file-progress">
-                        Progress: <span className="progress-value">{progress[file.name]?.toFixed(1) || 0}%</span>
+                        Progress:{" "}
+                        <span className="progress-value">
+                          {progress[file.name]?.toFixed(1) || 0}%
+                        </span>
                       </span>
                     )}
                   </li>
