@@ -109,6 +109,16 @@ async fn list_audio_files(path: &str) -> Result<Vec<AudioFile>, String> {
 }
 
 #[tauri::command]
+async fn check_ffmpeg() -> Result<bool, String> {
+    let output = std::process::Command::new("ffmpeg")
+        .arg("-version")
+        .output()
+        .map_err(|_| "Failed to execute ffmpeg command".to_string())?;
+    
+    Ok(output.status.success())
+}
+
+#[tauri::command]
 async fn split_audio_files(
     files: Vec<AudioFile>,
     dest_path: &str,
@@ -237,6 +247,7 @@ pub fn run() {
             shallow_list_files,
             deep_list_files,
             split_audio_files,
+            check_ffmpeg,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

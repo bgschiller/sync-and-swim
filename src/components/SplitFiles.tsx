@@ -18,8 +18,14 @@ function SplitFiles() {
   const [progress, setProgress] = useState<{[key: string]: number}>({});
   const [currentFile, setCurrentFile] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [ffmpegAvailable, setFfmpegAvailable] = useState<boolean | null>(null);
 
   useEffect(() => {
+    // Check if ffmpeg is available
+    invoke<boolean>("check_ffmpeg")
+      .then(available => setFfmpegAvailable(available))
+      .catch(() => setFfmpegAvailable(false));
+
     const unlisten = listen("segment-progress", (event: any) => {
       const { file_name, progress: fileProgress, completed } = event.payload;
       setCurrentFile(file_name);
@@ -60,6 +66,12 @@ function SplitFiles() {
     <div className="split-files-container">
       <div className="split-files-columns">
         <div className="column">
+          {ffmpegAvailable === false && (
+            <div style={{ color: 'red', marginBottom: '1rem' }}>
+              ⚠️ Warning: ffmpeg is not available on your system. File splitting will not work without it.
+              Please install ffmpeg first.
+            </div>
+          )}
           <p>
             Some audio files might be too long for your headphones to handle properly.
             This tool can split them into smaller chunks of a specified duration.
