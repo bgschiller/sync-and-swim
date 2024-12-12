@@ -149,10 +149,23 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                       status = "current";
                     }
                   }
+                  const handleFileClick = () => {
+                    const filePercentage = (index / files.length) * 100;
+                    // Expand search range if needed
+                    const newRange = {
+                      start: Math.min(searchRange.start, filePercentage),
+                      end: Math.max(searchRange.end, filePercentage)
+                    };
+                    setSearchRange(newRange);
+                    setCurrentGuess(filePercentage);
+                    setCurrentFileIndex(index);
+                  };
+
                   return (
                     <li 
                       key={file.path} 
                       className={`file-status-${status}`}
+                      onClick={handleFileClick}
                       ref={index === currentFileIndex ? (el) => {
                         if (el) {
                           el.scrollIntoView({ 

@@ -84,6 +84,15 @@
   border-bottom: 1px solid #ddd;
   font-size: 0.9rem;
   transition: background-color 0.3s ease;
+  cursor: pointer;
+}
+
+.file-list li:hover {
+  background-color: #e8e8e8;
+}
+
+.file-list li.file-status-current:hover {
+  background-color: #d4e8fc;
 }
 
 .file-list li.file-status-inactive {
