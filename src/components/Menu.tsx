@@ -1,3 +1,5 @@
+import FindPlace from './FindPlace';
+
 interface MenuOption {
   id: string;
   title: string;

@@ -1,0 +1,14 @@
+.find-place {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.find-place h2 {
+  margin-bottom: 1rem;
+}
+
+.find-place p {
+  color: #666;
+  margin-bottom: 2rem;
+}
