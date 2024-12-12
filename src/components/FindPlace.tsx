@@ -16,8 +16,10 @@ interface FindPlaceProps {
 function FindPlace({ onSelectOption }: FindPlaceProps) {
   const [files, setFiles] = useState<AudioFile[]>([]);
   const [audioDir, setAudioDir] = useState<string>("");
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentFileIndex, setCurrentFileIndex] = useState<number>(0);
   const [percentage, setPercentage] = useState<number>(50);
+  const [currentGuess, setCurrentGuess] = useState<number>(0);
+  const [searchRange, setSearchRange] = useState<{ start: number; end: number }>({ start: 0, end: 100 });
 
   return (
     <div className="find-place">
@@ -40,13 +42,14 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
               value={audioDir}
               onChange={async (path) => {
                 setAudioDir(path);
-                const audioFiles = await invoke<AudioFile[]>(
-                  "list_audio_files",
-                  {
-                    path,
-                  },
-                );
+                const audioFiles = await invoke<AudioFile[]>("list_audio_files", {
+                  path,
+                });
                 setFiles(audioFiles);
+                const initialIndex = Math.floor((percentage / 100) * audioFiles.length);
+                setCurrentFileIndex(initialIndex);
+                setCurrentGuess(percentage);
+                setSearchRange({ start: 0, end: 100 });
               }}
             />
           </div>
@@ -68,15 +71,61 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                   onChange={(e) => setPercentage(Number(e.target.value))}
                 />
               </div>
-              <div className="playback-controls">
-                <button
-                  className="play-btn"
-                  onClick={() => setIsPlaying(!isPlaying)}
-                >
-                  {isPlaying ? "Pause" : "Play"}
-                </button>
-                {/* TODO: Add skip forward/backward controls */}
-              </div>
+              {files.length > 0 && (
+                <div className="playback-section">
+                  <div className="current-file">
+                    Playing: {files[currentFileIndex].name}
+                  </div>
+                  <audio 
+                    controls 
+                    src={`file://${files[currentFileIndex].path}`}
+                    style={{ width: '100%', marginBottom: '1rem' }}
+                  />
+                  <div className="feedback-controls">
+                    <p>Does this part sound familiar?</p>
+                    <div className="feedback-buttons">
+                      <button 
+                        onClick={() => {
+                          // If they remember this part, search in later files
+                          const newStart = currentGuess;
+                          const newEnd = searchRange.end;
+                          const newGuess = Math.floor((newStart + newEnd) / 2);
+                          setSearchRange({ start: newStart, end: newEnd });
+                          setCurrentGuess(newGuess);
+                          setCurrentFileIndex(Math.floor((newGuess / 100) * files.length));
+                        }}
+                        className="feedback-btn yes"
+                      >
+                        Yes, I remember this
+                      </button>
+                      <button 
+                        onClick={() => {
+                          // If they don't remember, search in earlier files
+                          const newStart = searchRange.start;
+                          const newEnd = currentGuess;
+                          const newGuess = Math.floor((newStart + newEnd) / 2);
+                          setSearchRange({ start: newStart, end: newEnd });
+                          setCurrentGuess(newGuess);
+                          setCurrentFileIndex(Math.floor((newGuess / 100) * files.length));
+                        }}
+                        className="feedback-btn no"
+                      >
+                        No, don't remember this
+                      </button>
+                      <button 
+                        onClick={() => {
+                          // If unsure, try the previous file
+                          const newIndex = Math.max(0, currentFileIndex - 1);
+                          setCurrentFileIndex(newIndex);
+                        }}
+                        className="feedback-btn unsure"
+                      >
+                        Not sure
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>
