@@ -16,10 +16,13 @@ interface FindPlaceProps {
 function FindPlace({ onSelectOption }: FindPlaceProps) {
   const [files, setFiles] = useState<AudioFile[]>([]);
   const [audioDir, setAudioDir] = useState<string>("");
-  const [currentFileIndex, setCurrentFileIndex] = useState<number>(0);
+  const [currentFileIndex, setCurrentFileIndex] = useState<number | null>(null);
   const [percentage, setPercentage] = useState<number>(50);
   const [currentGuess, setCurrentGuess] = useState<number>(0);
-  const [searchRange, setSearchRange] = useState<{ start: number; end: number }>({ start: 0, end: 100 });
+  const [searchRange, setSearchRange] = useState<{
+    start: number;
+    end: number;
+  }>({ start: 0, end: 100 });
 
   return (
     <div className="find-place">
@@ -41,11 +44,16 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
               value={audioDir}
               onChange={async (path) => {
                 setAudioDir(path);
-                const audioFiles = await invoke<AudioFile[]>("list_audio_files", {
-                  path,
-                });
+                const audioFiles = await invoke<AudioFile[]>(
+                  "list_audio_files",
+                  {
+                    path,
+                  },
+                );
                 setFiles(audioFiles);
-                const initialIndex = Math.floor((percentage / 100) * audioFiles.length);
+                const initialIndex = Math.floor(
+                  (percentage / 100) * audioFiles.length,
+                );
                 setCurrentFileIndex(initialIndex);
                 setCurrentGuess(percentage);
                 setSearchRange({ start: 0, end: 100 });
@@ -60,34 +68,44 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                   How far through would you guess you are, as a percentage?
                   Leave this at 50 if you like, but it may help you avoid
                   spoilers.
+                  <input
+                    type="number"
+                    id="percentage"
+                    min="0"
+                    max="100"
+                    value={percentage}
+                    onChange={(e) => setPercentage(Number(e.target.value))}
+                  />
                 </label>
-                <input
-                  type="number"
-                  id="percentage"
-                  min="0"
-                  max="100"
-                  value={percentage}
-                  onChange={(e) => setPercentage(Number(e.target.value))}
-                />
               </div>
               {files.length > 0 && (
                 <div className="playback-section">
                   <div className="current-file">
                     Playing: {files[currentFileIndex].name}
                   </div>
-                  <audio 
+                  <audio
                     controls
+                    autoPlay
                     key={files[currentFileIndex].path} // Force recreation when source changes
-                    src={convertFileSrc(files[currentFileIndex].path)}
-                    style={{ width: '100%', marginBottom: '1rem' }}
+                    src={
+                      currentFileIndex &&
+                      convertFileSrc(files[currentFileIndex].path)
+                    }
+                    style={{ width: "100%", marginBottom: "1rem" }}
                   />
                   <div className="feedback-controls">
-                    <p>Does this part sound familiar?</p>
-                    <p className="steps-remaining">
-                      Approximately {Math.ceil(Math.log2(searchRange.end - searchRange.start))} more steps needed
+                    <p>
+                      Does this part sound familiar?{" "}
+                      <span className="steps-remaining">
+                        Approximately{" "}
+                        {Math.ceil(
+                          Math.log2(searchRange.end - searchRange.start),
+                        )}{" "}
+                        more steps needed
+                      </span>
                     </p>
                     <div className="feedback-buttons">
-                      <button 
+                      <button
                         onClick={() => {
                           // If they remember this part, search in later files
                           const newStart = currentGuess;
@@ -95,21 +113,32 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                           const newGuess = Math.floor((newStart + newEnd) / 2);
                           setSearchRange({ start: newStart, end: newEnd });
                           setCurrentGuess(newGuess);
-                          
+
                           // Calculate the range of files in the new search space
-                          const startFileIndex = Math.floor((newStart / 100) * files.length);
-                          const endFileIndex = Math.floor((newEnd / 100) * files.length);
-                          const guessFileIndex = Math.floor((newGuess / 100) * files.length);
-                          
+                          const startFileIndex = Math.floor(
+                            (newStart / 100) * files.length,
+                          );
+                          const endFileIndex = Math.floor(
+                            (newEnd / 100) * files.length,
+                          );
+                          const guessFileIndex = Math.floor(
+                            (newGuess / 100) * files.length,
+                          );
+
                           // If we're down to two files and user recognizes the first one,
                           // play the second file since that's likely where they left off
-                          if (endFileIndex - startFileIndex === 1 && currentFileIndex === startFileIndex) {
+                          if (
+                            endFileIndex - startFileIndex === 1 &&
+                            currentFileIndex === startFileIndex
+                          ) {
                             setCurrentFileIndex(endFileIndex);
                           } else if (endFileIndex - startFileIndex <= 1) {
                             setCurrentFileIndex(startFileIndex);
                           } else if (guessFileIndex === currentFileIndex) {
                             // If the new guess would play the same file, force moving forward
-                            setCurrentFileIndex(Math.min(currentFileIndex + 1, endFileIndex));
+                            setCurrentFileIndex(
+                              Math.min(currentFileIndex + 1, endFileIndex),
+                            );
                           } else {
                             setCurrentFileIndex(guessFileIndex);
                           }
@@ -118,7 +147,7 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                       >
                         Yes, I remember this
                       </button>
-                      <button 
+                      <button
                         onClick={() => {
                           // If they don't remember, search in earlier files
                           const newStart = searchRange.start;
@@ -126,18 +155,26 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                           const newGuess = Math.floor((newStart + newEnd) / 2);
                           setSearchRange({ start: newStart, end: newEnd });
                           setCurrentGuess(newGuess);
-                          
+
                           // Calculate the range of files in the new search space
-                          const startFileIndex = Math.floor((newStart / 100) * files.length);
-                          const endFileIndex = Math.floor((newEnd / 100) * files.length);
-                          const guessFileIndex = Math.floor((newGuess / 100) * files.length);
-                          
+                          const startFileIndex = Math.floor(
+                            (newStart / 100) * files.length,
+                          );
+                          const endFileIndex = Math.floor(
+                            (newEnd / 100) * files.length,
+                          );
+                          const guessFileIndex = Math.floor(
+                            (newGuess / 100) * files.length,
+                          );
+
                           // If we're down to two or fewer files, always play the first file in range
                           if (endFileIndex - startFileIndex <= 1) {
                             setCurrentFileIndex(startFileIndex);
                           } else if (guessFileIndex === currentFileIndex) {
                             // If the new guess would play the same file, force moving backward
-                            setCurrentFileIndex(Math.max(currentFileIndex - 1, startFileIndex));
+                            setCurrentFileIndex(
+                              Math.max(currentFileIndex - 1, startFileIndex),
+                            );
                           } else {
                             setCurrentFileIndex(guessFileIndex);
                           }
@@ -160,7 +197,9 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                     <button
                       onClick={() => {
                         // Reset to initial state
-                        const initialIndex = Math.floor((percentage / 100) * files.length);
+                        const initialIndex = Math.floor(
+                          (percentage / 100) * files.length,
+                        );
                         setCurrentFileIndex(initialIndex);
                         setCurrentGuess(percentage);
                         setSearchRange({ start: 0, end: 100 });
@@ -183,7 +222,10 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                 {files.map((file, index) => {
                   const filePercentage = (index / files.length) * 100;
                   let status = "inactive";
-                  if (filePercentage >= searchRange.start && filePercentage <= searchRange.end) {
+                  if (
+                    filePercentage >= searchRange.start &&
+                    filePercentage <= searchRange.end
+                  ) {
                     status = "active";
                     if (index === currentFileIndex) {
                       status = "current";
@@ -194,7 +236,7 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                     // Expand search range if needed
                     const newRange = {
                       start: Math.min(searchRange.start, filePercentage),
-                      end: Math.max(searchRange.end, filePercentage)
+                      end: Math.max(searchRange.end, filePercentage),
                     };
                     setSearchRange(newRange);
                     setCurrentGuess(filePercentage);
@@ -202,18 +244,22 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                   };
 
                   return (
-                    <li 
-                      key={file.path} 
+                    <li
+                      key={file.path}
                       className={`file-status-${status}`}
                       onClick={handleFileClick}
-                      ref={index === currentFileIndex ? (el) => {
-                        if (el) {
-                          el.scrollIntoView({ 
-                            behavior: 'smooth', 
-                            block: 'center' 
-                          });
-                        }
-                      } : undefined}
+                      ref={
+                        index === currentFileIndex
+                          ? (el) => {
+                              if (el) {
+                                el.scrollIntoView({
+                                  behavior: "smooth",
+                                  block: "center",
+                                });
+                              }
+                            }
+                          : undefined
+                      }
                     >
                       {file.name}
                     </li>
