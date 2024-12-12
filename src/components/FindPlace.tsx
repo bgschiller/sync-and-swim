@@ -100,12 +100,16 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                           // Calculate the range of files in the new search space
                           const startFileIndex = Math.floor((newStart / 100) * files.length);
                           const endFileIndex = Math.floor((newEnd / 100) * files.length);
+                          const guessFileIndex = Math.floor((newGuess / 100) * files.length);
                           
-                          // If we're down to two or fewer files, play the first one
+                          // If we're down to two or fewer files, always play the first file in range
                           if (endFileIndex - startFileIndex <= 1) {
                             setCurrentFileIndex(startFileIndex);
+                          } else if (guessFileIndex === currentFileIndex) {
+                            // If the new guess would play the same file, force moving forward
+                            setCurrentFileIndex(Math.min(currentFileIndex + 1, endFileIndex));
                           } else {
-                            setCurrentFileIndex(Math.floor((newGuess / 100) * files.length));
+                            setCurrentFileIndex(guessFileIndex);
                           }
                         }}
                         className="feedback-btn yes"
@@ -124,12 +128,16 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                           // Calculate the range of files in the new search space
                           const startFileIndex = Math.floor((newStart / 100) * files.length);
                           const endFileIndex = Math.floor((newEnd / 100) * files.length);
+                          const guessFileIndex = Math.floor((newGuess / 100) * files.length);
                           
-                          // If we're down to two or fewer files, play the first one
+                          // If we're down to two or fewer files, always play the first file in range
                           if (endFileIndex - startFileIndex <= 1) {
                             setCurrentFileIndex(startFileIndex);
+                          } else if (guessFileIndex === currentFileIndex) {
+                            // If the new guess would play the same file, force moving backward
+                            setCurrentFileIndex(Math.max(currentFileIndex - 1, startFileIndex));
                           } else {
-                            setCurrentFileIndex(Math.floor((newGuess / 100) * files.length));
+                            setCurrentFileIndex(guessFileIndex);
                           }
                         }}
                         className="feedback-btn no"
