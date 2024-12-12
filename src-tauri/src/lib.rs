@@ -166,7 +166,17 @@ async fn copy_files(
     mode: &str,
     window: tauri::Window,
 ) -> Result<(), String> {
-    // If mode is "replace", delete the destination directory first. AI!
+    // Delete destination directory if mode is "replace"
+    if mode == "replace" {
+        if let Err(e) = fs::remove_dir_all(dest_path) {
+            // Ignore if directory doesn't exist
+            if e.kind() != std::io::ErrorKind::NotFound {
+                return Err(e.to_string());
+            }
+        }
+        fs::create_dir_all(dest_path).map_err(|e| e.to_string())?;
+    }
+
     let total = files.len();
 
     for (index, file) in files.into_iter().enumerate() {
