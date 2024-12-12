@@ -1,6 +1,5 @@
 import { open } from "@tauri-apps/plugin-dialog";
 import { useEffect } from "react";
-import { homedir } from "@tauri-apps/api/os";
 import "./FileChoice.css";
 
 interface FileChoiceProps {
