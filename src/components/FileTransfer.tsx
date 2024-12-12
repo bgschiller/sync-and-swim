@@ -142,187 +142,185 @@ function FileTransfer() {
 
   return (
     <div className="file-transfer-container">
-      <div className="column">
-        <p>
-          If you try to copy audio files to Shokz headphones with most tools,
-          they'll end up out of order. Instead of sorting by filename, the
-          headphones decide which track is next according to when each file was
-          copied.
-        </p>
-        <p>
-          This program copies the files one at a time, ensuring each has arrived
-          before sending the next.
-        </p>
-      </div>
-      <div className="column">
-        <ol className="controls">
-          <li>
-            Choose a folder on your computer with the audio files you want to
-            transfer.
-            <FileChoice
-              label="Source Folder"
-              value={sourceDir}
-              onChange={async (path) => {
-                setSourceDir(path);
-                const audioFiles = await invoke<AudioFile[]>(
-                  "list_audio_files",
-                  {
-                    path,
-                  },
-                );
-                setFiles(audioFiles);
-              }}
-            />
-          </li>
-          <li>
-            Choose the folder for your headphones (it's probably named something
-            like "/Volumes/OpenSwim")
-            <FileChoice
-              label="Destination Folder"
-              value={destDir}
-              onChange={async (path) => {
-                setDestDir(path);
-                if (path) {
-                  const existingFiles = await invoke<AudioFile[]>(
-                    "deep_list_files",
+      <div className="file-transfer-columns">
+        <div className="column">
+          <p>
+            If you try to copy audio files to Shokz headphones with most tools,
+            they'll end up out of order. Instead of sorting by filename, the
+            headphones decide which track is next according to when each file
+            was copied.
+          </p>
+          <p>
+            This program copies the files one at a time, ensuring each has
+            arrived before sending the next.
+          </p>
+        </div>
+        <div className="column">
+          <ol className="controls">
+            <li>
+              Choose a folder on your computer with the audio files you want to
+              transfer.
+              <FileChoice
+                label="Source Folder"
+                value={sourceDir}
+                onChange={async (path) => {
+                  setSourceDir(path);
+                  const audioFiles = await invoke<AudioFile[]>(
+                    "list_audio_files",
                     {
                       path,
                     },
                   );
-                  setExistingFileCount(existingFiles.length);
-                } else {
-                  setExistingFileCount(0);
-                }
-              }}
-            />
-          </li>
-          <li>
-            Choose whether to
-            <div className="radio-group">
-              <div className="radio-option">
-                <input
-                  type="radio"
-                  id="append"
-                  name="transferMode"
-                  value="append"
-                  checked={transferMode === "append"}
-                  onChange={(e) =>
-                    setTransferMode(e.target.value as "append" | "replace")
-                  }
-                />
-                <label htmlFor="append">
-                  Add after existing files ({existingFileCount} file
-                  {existingFileCount !== 1 ? "s" : ""})
-                </label>
-              </div>
-              <div className="radio-option">
-                <input
-                  type="radio"
-                  id="replace"
-                  name="transferMode"
-                  value="replace"
-                  checked={transferMode === "replace"}
-                  onChange={(e) =>
-                    setTransferMode(e.target.value as "append" | "replace")
-                  }
-                />
-                <label htmlFor="replace">
-                  Delete existing files first ({existingFileCount} file
-                  {existingFileCount !== 1 ? "s" : ""} will be removed)
-                </label>
-              </div>
-            </div>
-          </li>
-        </ol>
-
-        {isTransferring && (
-          <div className="progress">
-            <p>Copying: {currentFile}</p>
-            <p>Progress: {progress}%</p>
-            <div className="progress-bar">
-              <div
-                className="progress-bar-fill"
-                style={{ width: `${progress}%` }}
+                  setFiles(audioFiles);
+                }}
               />
-            </div>
-          </div>
-        )}
-
-        <button
-          onClick={handleTransfer}
-          disabled={!destDir || isTransferring}
-          className="transfer-button"
-        >
-          {isTransferring ? "Transferring..." : "Transfer Files"}
-        </button>
-      </div>
-      <div className="column">
-        <div className="file-list">
-          <h2>Files to Transfer:</h2>
-          <ul className="directory-list">
-            {Object.entries(
-              files.reduce<DirectoryStructure>((acc, file) => {
-                const dir = file.relative_path || "";
-                if (!acc[dir]) acc[dir] = [];
-                acc[dir].push(file);
-                return acc;
-              }, {}),
-            ).map(([dir, dirFiles]) =>
-              dir ? (
-                <li key={dir} className="top-of-map">
-                  <div className="directory-header">
-                    <div
-                      className="directory-title"
-                      onClick={() =>
-                        setExpandedDirs((prev) => {
-                          const next = new Set(prev);
-                          if (next.has(dir)) {
-                            next.delete(dir);
-                          } else {
-                            next.add(dir);
-                          }
-                          return next;
-                        })
-                      }
-                    >
-                      <span>
-                        <span
-                          className={`directory-toggle ${expandedDirs.has(dir) ? "expanded" : ""}`}
-                        >
-                          ▶
+            </li>
+            <li>
+              Choose the folder for your headphones (it's probably named
+              something like "/Volumes/OpenSwim")
+              <FileChoice
+                label="Destination Folder"
+                value={destDir}
+                onChange={async (path) => {
+                  setDestDir(path);
+                  if (path) {
+                    const existingFiles = await invoke<AudioFile[]>(
+                      "deep_list_files",
+                      {
+                        path,
+                      },
+                    );
+                    setExistingFileCount(existingFiles.length);
+                  } else {
+                    setExistingFileCount(0);
+                  }
+                }}
+              />
+            </li>
+            <li>
+              Choose whether to
+              <div className="radio-group">
+                <div className="radio-option">
+                  <input
+                    type="radio"
+                    id="append"
+                    name="transferMode"
+                    value="append"
+                    checked={transferMode === "append"}
+                    onChange={(e) =>
+                      setTransferMode(e.target.value as "append" | "replace")
+                    }
+                  />
+                  <label htmlFor="append">Add after existing files</label>
+                </div>
+                <div className="radio-option">
+                  <input
+                    type="radio"
+                    id="replace"
+                    name="transferMode"
+                    value="replace"
+                    checked={transferMode === "replace"}
+                    onChange={(e) =>
+                      setTransferMode(e.target.value as "append" | "replace")
+                    }
+                  />
+                  <label htmlFor="replace">
+                    Delete existing files first ({existingFileCount} file
+                    {existingFileCount !== 1 ? "s" : ""} will be removed)
+                  </label>
+                </div>
+              </div>
+            </li>
+          </ol>
+        </div>
+        <div className="column">
+          <div className="file-list">
+            <h2>Files to Transfer:</h2>
+            <ul className="directory-list">
+              {Object.entries(
+                files.reduce<DirectoryStructure>((acc, file) => {
+                  const dir = file.relative_path || "";
+                  if (!acc[dir]) acc[dir] = [];
+                  acc[dir].push(file);
+                  return acc;
+                }, {}),
+              ).map(([dir, dirFiles]) =>
+                dir ? (
+                  <li key={dir} className="top-of-map">
+                    <div className="directory-header">
+                      <div
+                        className="directory-title"
+                        onClick={() =>
+                          setExpandedDirs((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(dir)) {
+                              next.delete(dir);
+                            } else {
+                              next.add(dir);
+                            }
+                            return next;
+                          })
+                        }
+                      >
+                        <span>
+                          <span
+                            className={`directory-toggle ${expandedDirs.has(dir) ? "expanded" : ""}`}
+                          >
+                            ▶
+                          </span>
+                          {dir}
                         </span>
-                        {dir}
-                      </span>
-                      <span className="directory-count">
-                        {`${dirFiles.length} files`}
-                      </span>
+                        <span className="directory-count">
+                          {`${dirFiles.length} files`}
+                        </span>
+                      </div>
+                      <button
+                        className="shuffle-button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleDirectoryOrder(dir);
+                          setExpandedDirs((prev) => new Set(prev).add(dir));
+                        }}
+                      >
+                        {shuffledDirs.has(dir) ? "↕️ Sort" : "🔀 Shuffle"}
+                      </button>
                     </div>
-                    <button
-                      className="shuffle-button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleDirectoryOrder(dir);
-                        setExpandedDirs((prev) => new Set(prev).add(dir));
-                      }}
-                    >
-                      {shuffledDirs.has(dir) ? "↕️ Sort" : "🔀 Shuffle"}
-                    </button>
-                  </div>
-                  {expandedDirs.has(dir) && (
-                    <ul className="directory-files">
-                      {dirFiles.map((file) => (
-                        <li key={file.path}>{file.name}</li>
-                      ))}
-                    </ul>
-                  )}
-                </li>
-              ) : (
-                dirFiles.map((file) => <li key={file.path}>{file.name}</li>)
-              ),
-            )}
-          </ul>
+                    {expandedDirs.has(dir) && (
+                      <ul className="directory-files">
+                        {dirFiles.map((file) => (
+                          <li key={file.path}>{file.name}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                ) : (
+                  dirFiles.map((file) => <li key={file.path}>{file.name}</li>)
+                ),
+              )}
+            </ul>
+          </div>
         </div>
       </div>
+      {isTransferring && (
+        <div className="progress">
+          <p>Copying: {currentFile}</p>
+          <p>Progress: {progress}%</p>
+          <div className="progress-bar">
+            <div
+              className="progress-bar-fill"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
+      )}
+
+      <button
+        onClick={handleTransfer}
+        disabled={!destDir || isTransferring}
+        className="transfer-button"
+      >
+        {isTransferring ? "Transferring..." : "Transfer Files"}
+      </button>
     </div>
   );
 }
