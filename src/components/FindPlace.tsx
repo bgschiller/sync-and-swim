@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { invoke, convertFileSrc } from "@tauri-apps/api/core";
 import { FileChoice } from "./FileChoice";
 import "./FindPlace.css";
@@ -82,6 +82,9 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                   />
                   <div className="feedback-controls">
                     <p>Does this part sound familiar?</p>
+                    <p className="steps-remaining">
+                      Approximately {Math.ceil(Math.log2(searchRange.end - searchRange.start))} more steps needed
+                    </p>
                     <div className="feedback-buttons">
                       <button 
                         onClick={() => {

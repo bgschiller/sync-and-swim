@@ -113,6 +113,13 @@
   color: #333;
 }
 
+.feedback-controls .steps-remaining {
+  font-size: 0.9rem;
+  color: #666;
+  font-style: italic;
+  margin-bottom: 1rem;
+}
+
 .feedback-buttons {
   display: flex;
   gap: 1rem;
