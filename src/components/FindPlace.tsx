@@ -9,7 +9,11 @@ interface AudioFile {
   relative_path: string;
 }
 
-function FindPlace() {
+interface FindPlaceProps {
+  onSelectOption?: (optionId: string) => void;
+}
+
+function FindPlace({ onSelectOption }: FindPlaceProps) {
   const [files, setFiles] = useState<AudioFile[]>([]);
   const [audioDir, setAudioDir] = useState<string>("");
   const [isPlaying, setIsPlaying] = useState(false);
@@ -24,7 +28,7 @@ function FindPlace() {
             Select a directory containing your audiobooks or podcasts. We'll
             skip around to find the last place you remember. This works best if
             your audio files are small, so you may want to{" "}
-            <a href="#">Split them first</a>
+            <a href="#" onClick={() => onSelectOption?.('split-files')}>Split them first</a>
           </p>
 
           <div className="file-selection">
