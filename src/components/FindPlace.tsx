@@ -138,9 +138,21 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
             <h2>Files in Directory:</h2>
             {files.length > 0 ? (
               <ul>
-                {files.map((file) => (
-                  <li key={file.path}>{file.name}</li>
-                ))}
+                {files.map((file, index) => {
+                  const filePercentage = (index / files.length) * 100;
+                  let status = "inactive";
+                  if (filePercentage >= searchRange.start && filePercentage <= searchRange.end) {
+                    status = "active";
+                    if (index === currentFileIndex) {
+                      status = "current";
+                    }
+                  }
+                  return (
+                    <li key={file.path} className={`file-status-${status}`}>
+                      {file.name}
+                    </li>
+                  );
+                })}
               </ul>
             ) : (
               <p>No audio files selected</p>

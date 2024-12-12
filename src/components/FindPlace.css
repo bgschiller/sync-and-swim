@@ -82,7 +82,23 @@
   padding: 0.5rem;
   border-bottom: 1px solid #ddd;
   font-size: 0.9rem;
+  transition: background-color 0.3s ease;
+}
+
+.file-list li.file-status-inactive {
+  color: #999;
+  background-color: #f0f0f0;
+}
+
+.file-list li.file-status-active {
   color: #666;
+  background-color: #fff;
+}
+
+.file-list li.file-status-current {
+  color: #000;
+  background-color: #e3f2fd;
+  font-weight: 500;
 }
 
 .file-list li:last-child {
