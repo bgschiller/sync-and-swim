@@ -21,7 +21,7 @@ function FindPlace() {
         />
       </div>
 
-      {currentFile && (
+      {audioDir && (
         <div className="playback-controls">
           <button className="play-btn" onClick={() => setIsPlaying(!isPlaying)}>
             {isPlaying ? "Pause" : "Play"}
