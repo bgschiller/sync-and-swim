@@ -10,9 +10,9 @@ describe(bstStep, () => {
         sense: "yes-i-remember",
       }),
     ).toEqual({
-      range: { start: 6, end: 10 },
+      range: { start: 5, end: 10 },
       index: 8,
-      remainingSteps: 2,
+      remainingSteps: 3,
       type: "step",
     });
   });
@@ -27,7 +27,7 @@ describe(bstStep, () => {
     ).toEqual({
       range: { start: 0, end: 4 },
       index: 2,
-      remainingSteps: 2,
+      remainingSteps: 3,
       type: "step",
     });
   });
@@ -70,7 +70,7 @@ describe(bstStep, () => {
     ).toEqual({
       range: { start: 0, end: 2 },
       index: 1,
-      remainingSteps: 1,
+      remainingSteps: 2,
       type: "step",
     });
   });
@@ -87,6 +87,25 @@ describe(bstStep, () => {
       index: 5,
       remainingSteps: 4,
       type: "step",
+    });
+  });
+
+  it("performs correctly when there are three remaining possibilities", () => {
+    expect(
+      bstStep({
+        range: { start: 21, end: 23 },
+        index: 22,
+        sense: "yes-i-remember",
+        // user is saying they remember the *start* of file number 22.
+        // We can't know if they've heard the whole thing, so we should
+        // check the start of 23, but offer the possibility that 22 is still
+        // the right spot
+      }),
+    ).toEqual({
+      index: 23,
+      remainingSteps: 1,
+      type: "step",
+      range: { start: 22, end: 23 },
     });
   });
 });

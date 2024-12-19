@@ -45,8 +45,13 @@ export function bstStep(args: BstArgs): BstStep | BstSuccess {
       range: { start: index, end: index },
     };
   }
+  // When the user says "Yes, I remember", they're saying they remember the *start*
+  // of this file. We shouldn't exclude the whole file from the range.
   const newStart =
-    args.sense === "yes-i-remember" ? args.index + 1 : args.range.start;
+    args.sense === "yes-i-remember" ? args.index : args.range.start;
+  // However, when they say they don't remember a file, we know for sure that the
+  // whole of this file is outside the range. If the beginning of the clip is new,
+  // the whole thing will be new.
   const newEnd =
     args.sense === "no-i-dont-remember" ? args.index - 1 : args.range.end;
 
@@ -62,7 +67,9 @@ export function bstStep(args: BstArgs): BstStep | BstSuccess {
   // down the range to two tracks and the user says "yes" to the first one, we
   // don't actually know whether they've heard the whole thing or not.
   const newGuess = Math.ceil((newStart + newEnd) / 2);
-  const remainingSteps = Math.ceil(Math.log2(newEnd - newStart));
+  // Add 1 here because log_2(1) is zero. But when newEnd and newStart differ by 1 we still
+  // need to determine which is the right starting position.
+  const remainingSteps = Math.ceil(Math.log2(1 + newEnd - newStart));
   return {
     type: "step",
     range: { start: newStart, end: newEnd },
