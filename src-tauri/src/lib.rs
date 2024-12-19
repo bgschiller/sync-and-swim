@@ -110,7 +110,6 @@ async fn list_audio_files(path: &str) -> Result<Vec<AudioFile>, String> {
 }
 
 #[tauri::command]
-#[tauri::command]
 async fn delete_files(files: Vec<AudioFile>) -> Result<(), String> {
     for file in files {
         remove_file(&file.path).map_err(|e| format!("Failed to delete {}: {}", file.name, e))?;
