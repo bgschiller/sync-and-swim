@@ -15,111 +15,148 @@ interface FindPlaceProps {
 
 interface AudioBinarySearchProps {
   files: AudioFile[];
-  onStartOver: () => void;
-  currentFileIndex: number;
-  setCurrentFileIndex: (index: number) => void;
-  searchRange: { start: number; end: number };
-  setSearchRange: (range: { start: number; end: number }) => void;
+  bstState: BstStep | BstSuccess;
+  setBstState: (state: BstStep | BstSuccess) => void;
+}
+interface BstArgs {
+  range: { start: number; end: number };
+  index: number;
+  sense: "yes-i-remember" | "no-i-dont-remember";
+}
+interface BstStep {
+  type: "step";
+  range: { start: number; end: number };
+  index: number;
+  remainingSteps: number;
+}
+interface BstSuccess {
+  index: number;
+  range: { start: number; end: number };
+  type: "success";
+}
+export function bstStep(args: BstArgs): BstStep | BstSuccess {
+  if (args.range.end - args.range.start <= 1) {
+    const index =
+      args.sense === "yes-i-remember" ? args.range.end : args.range.start;
+    return {
+      type: "success",
+      index,
+      range: { start: index, end: index },
+    };
+  }
+  const newStart =
+    args.sense === "yes-i-remember" ? args.index + 1 : args.range.start;
+  const newEnd =
+    args.sense === "no-i-dont-remember" ? args.index - 1 : args.range.end;
+
+  if (newStart >= newEnd) {
+    return {
+      type: "success",
+      index: args.range.end,
+      range: { start: args.range.end, end: args.range.end },
+    };
+  }
+  // Choose the ceiling of the midpoint because we want to err on the side
+  // of giving the user more content to listen to. That is, if we've narrowed
+  // down the range to two tracks and the user says "yes" to the first one, we
+  // don't actually know whether they've heard the whole thing or not.
+  const newGuess = Math.ceil((newStart + newEnd) / 2);
+  const remainingSteps = Math.ceil(Math.log2(newEnd - newStart));
+  return {
+    type: "step",
+    range: { start: newStart, end: newEnd },
+    index: newGuess,
+    remainingSteps,
+  };
 }
 
-function AudioBinarySearch({ 
-  files, 
-  onStartOver,
-  currentFileIndex,
-  setCurrentFileIndex,
-  searchRange,
-  setSearchRange
+function AudioBinarySearch({
+  files,
+  bstState,
+  setBstState,
 }: AudioBinarySearchProps) {
-  const [currentGuess, setCurrentGuess] = useState<number>(50);
+  function onStartOver() {
+    setBstState(
+      bstStep({
+        range: { start: 0, end: files.length },
+        index: 0,
+        sense: "yes-i-remember",
+      }),
+    );
+  }
 
   return (
     <div className="playback-section">
-      <div className="current-file">
-        Playing: {files[currentFileIndex].name}
-      </div>
+      <div className="current-file">Playing: {files[bstState.index].name}</div>
       <audio
+        autoPlay={bstState.type === "step"}
         controls
-        key={files[currentFileIndex].path}
-        src={convertFileSrc(files[currentFileIndex].path)}
+        key={files[bstState.index].path}
+        src={convertFileSrc(files[bstState.index].path)}
         style={{ width: "100%", marginBottom: "1rem" }}
       />
-      <div className="feedback-controls">
-        <p>
-          Does this part sound familiar?{" "}
-          <span className="steps-remaining">
-            Approximately{" "}
-            {Math.ceil(Math.log2(searchRange.end - searchRange.start))}{" "}
-            more steps needed
-          </span>
-        </p>
-        <div className="feedback-buttons">
-          <button
-            onClick={() => {
-              const newStart = currentGuess;
-              const newEnd = searchRange.end;
-              const newGuess = Math.floor((newStart + newEnd) / 2);
-              setSearchRange({ start: newStart, end: newEnd });
-              setCurrentGuess(newGuess);
-
-              const startFileIndex = Math.floor((newStart / 100) * files.length);
-              const endFileIndex = Math.floor((newEnd / 100) * files.length);
-              const guessFileIndex = Math.floor((newGuess / 100) * files.length);
-
-              if (endFileIndex - startFileIndex === 1 && currentFileIndex === startFileIndex) {
-                setCurrentFileIndex(endFileIndex);
-              } else if (endFileIndex - startFileIndex <= 1) {
-                setCurrentFileIndex(startFileIndex);
-              } else if (guessFileIndex === currentFileIndex) {
-                setCurrentFileIndex(Math.min(currentFileIndex + 1, endFileIndex));
-              } else {
-                setCurrentFileIndex(guessFileIndex);
-              }
-            }}
-            className="feedback-btn yes"
-          >
-            Yes, I remember this
-          </button>
-          <button
-            onClick={() => {
-              const newStart = searchRange.start;
-              const newEnd = currentGuess;
-              const newGuess = Math.floor((newStart + newEnd) / 2);
-              setSearchRange({ start: newStart, end: newEnd });
-              setCurrentGuess(newGuess);
-
-              const startFileIndex = Math.floor((newStart / 100) * files.length);
-              const endFileIndex = Math.floor((newEnd / 100) * files.length);
-              const guessFileIndex = Math.floor((newGuess / 100) * files.length);
-
-              if (endFileIndex - startFileIndex <= 1) {
-                setCurrentFileIndex(startFileIndex);
-              } else if (guessFileIndex === currentFileIndex) {
-                setCurrentFileIndex(Math.max(currentFileIndex - 1, startFileIndex));
-              } else {
-                setCurrentFileIndex(guessFileIndex);
-              }
-            }}
-            className="feedback-btn no"
-          >
-            No, don't remember this
-          </button>
-          <button
-            onClick={() => {
-              const newIndex = Math.max(0, currentFileIndex - 1);
-              setCurrentFileIndex(newIndex);
-            }}
-            className="feedback-btn unsure"
-          >
-            Not sure
+      {bstState.type === "step" ? (
+        <div className="feedback-controls">
+          <p>
+            Does this part sound familiar?{" "}
+            <span className="steps-remaining">
+              Approximately {bstState.remainingSteps} steps needed
+            </span>
+          </p>
+          <div className="feedback-buttons">
+            <button
+              onClick={() => {
+                setBstState(
+                  bstStep({
+                    ...bstState,
+                    sense: "yes-i-remember",
+                  }),
+                );
+              }}
+              className="feedback-btn yes"
+            >
+              Yes, I remember this
+            </button>
+            <button
+              onClick={() => {
+                setBstState(
+                  bstStep({
+                    ...bstState,
+                    sense: "no-i-dont-remember",
+                  }),
+                );
+              }}
+              className="feedback-btn no"
+            >
+              No, don't remember this
+            </button>
+            <button
+              onClick={() => {
+                setBstState({
+                  ...bstState,
+                  index: bstState.index - 1,
+                });
+              }}
+              className="feedback-btn unsure"
+            >
+              Not sure
+            </button>
+          </div>
+          <button onClick={onStartOver} className="feedback-btn start-over">
+            Start Over
           </button>
         </div>
-        <button
-          onClick={onStartOver}
-          className="feedback-btn start-over"
-        >
-          Start Over
-        </button>
-      </div>
+      ) : (
+        <div className="feedback-controls">
+          <p>
+            Found it! You were last listening to{" "}
+            <strong>{files[bstState.index].name}</strong>.
+          </p>
+          <button onClick={onStartOver} className="feedback-btn start-over">
+            Start Over
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -128,11 +165,13 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
   const [files, setFiles] = useState<AudioFile[]>([]);
   const [audioDir, setAudioDir] = useState<string>("");
   const [isSearching, setIsSearching] = useState<boolean>(false);
-  const [currentFileIndex, setCurrentFileIndex] = useState<number>(0);
-  const [searchRange, setSearchRange] = useState<{
-    start: number;
-    end: number;
-  }>({ start: 0, end: 100 });
+  const [bstState, setBstState] = useState<BstStep | BstSuccess>(
+    bstStep({
+      range: { start: 0, end: 100 },
+      index: 0,
+      sense: "yes-i-remember",
+    }),
+  );
 
   return (
     <div className="find-place">
@@ -172,7 +211,7 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                 <button
                   onClick={() => setIsSearching(true)}
                   className="feedback-btn yes"
-                  style={{ marginTop: '1rem' }}
+                  style={{ marginTop: "1rem" }}
                 >
                   Find my place
                 </button>
@@ -180,14 +219,8 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
               {files.length > 0 && isSearching && (
                 <AudioBinarySearch
                   files={files}
-                  currentFileIndex={currentFileIndex}
-                  setCurrentFileIndex={setCurrentFileIndex}
-                  searchRange={searchRange}
-                  setSearchRange={setSearchRange}
-                  onStartOver={() => {
-                    setIsSearching(false);
-                    setSearchRange({ start: 0, end: 100 });
-                  }}
+                  bstState={bstState}
+                  setBstState={setBstState}
                 />
               )}
             </>
@@ -199,35 +232,36 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
             {files.length > 0 ? (
               <ul>
                 {files.map((file, index) => {
-                  const filePercentage = (index / files.length) * 100;
-                  let status = "inactive";
-                  if (isSearching && 
-                      filePercentage >= searchRange.start &&
-                      filePercentage <= searchRange.end
+                  let status = isSearching ? "inactive" : "active";
+                  if (
+                    isSearching &&
+                    index >= bstState.range.start &&
+                    index <= bstState.range.end
                   ) {
                     status = "active";
-                    if (index === currentFileIndex) {
+                    if (index === bstState.index) {
                       status = "current";
                     }
                   }
                   const handleFileClick = () => {
                     if (!isSearching) return;
-                    const filePercentage = (index / files.length) * 100;
-                    setSearchRange({
-                      start: Math.min(searchRange.start, filePercentage),
-                      end: Math.max(searchRange.end, filePercentage),
+                    setBstState({
+                      ...bstState,
+                      index,
+                      range: {
+                        start: Math.min(bstState.range.start, index),
+                        end: Math.max(bstState.range.end, index),
+                      },
                     });
-                    setCurrentGuess(filePercentage);
-                    setCurrentFileIndex(index);
                   };
 
                   return (
                     <li
                       key={file.path}
-                      className={`file-status-${status}`}
+                      className={`file-status-${status} file-status-searching-${isSearching}`}
                       onClick={handleFileClick}
                       ref={
-                        index === currentFileIndex && isSearching
+                        index === bstState.index && isSearching
                           ? (el) => {
                               if (el) {
                                 el.scrollIntoView({

@@ -32,7 +32,6 @@
   margin-bottom: 2rem;
 }
 
-
 .content-columns {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -66,6 +65,9 @@
   font-size: 0.9rem;
   transition: background-color 0.3s ease;
   cursor: pointer;
+}
+.file-list li.file-status-searching-false {
+  cursor: unset;
 }
 
 .file-list li:hover {
