@@ -17,6 +17,7 @@ interface AudioBinarySearchProps {
   files: AudioFile[];
   bstState: BstStep | BstSuccess;
   setBstState: (state: BstStep | BstSuccess) => void;
+  onDeleteFiles?: (files: AudioFile[]) => Promise<void>;
 }
 interface BstArgs {
   range: { start: number; end: number };
@@ -74,7 +75,9 @@ function AudioBinarySearch({
   files,
   bstState,
   setBstState,
+  onDeleteFiles,
 }: AudioBinarySearchProps) {
+  const [isDeletingFiles, setIsDeletingFiles] = useState(false);
   function onStartOver() {
     setBstState(
       bstStep({
@@ -152,6 +155,41 @@ function AudioBinarySearch({
             Found it! You were last listening to{" "}
             <strong>{files[bstState.index].name}</strong>.
           </p>
+          {!isDeletingFiles && onDeleteFiles && bstState.index > 0 && (
+            <button
+              onClick={() => setIsDeletingFiles(true)}
+              className="feedback-btn no"
+              style={{ marginBottom: "1rem" }}
+            >
+              Delete earlier files
+            </button>
+          )}
+          {isDeletingFiles && (
+            <div style={{ marginBottom: "1rem" }}>
+              <p className="warning">
+                This will remove {files[0].name} through{" "}
+                {files[bstState.index - 1].name} ({bstState.index} files)
+              </p>
+              <button
+                onClick={async () => {
+                  if (onDeleteFiles) {
+                    await onDeleteFiles(files.slice(0, bstState.index));
+                    setIsDeletingFiles(false);
+                  }
+                }}
+                className="feedback-btn no"
+              >
+                Confirm Delete
+              </button>
+              <button
+                onClick={() => setIsDeletingFiles(false)}
+                className="feedback-btn unsure"
+                style={{ marginLeft: "1rem" }}
+              >
+                Cancel
+              </button>
+            </div>
+          )}
           <button onClick={onStartOver} className="feedback-btn start-over">
             Start Over
           </button>
@@ -221,6 +259,17 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                   files={files}
                   bstState={bstState}
                   setBstState={setBstState}
+                  onDeleteFiles={async (filesToDelete) => {
+                    // TODO: Implement actual file deletion using Tauri
+                    console.log("Would delete:", filesToDelete);
+                    const remainingFiles = files.slice(filesToDelete.length);
+                    setFiles(remainingFiles);
+                    setBstState({
+                      type: "success",
+                      index: 0,
+                      range: { start: 0, end: 0 },
+                    });
+                  }}
                 />
               )}
             </>
