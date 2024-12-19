@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
 use tauri::Emitter;
+use std::fs::remove_file;
 mod audio_segment;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -106,6 +107,15 @@ async fn list_audio_files(path: &str) -> Result<Vec<AudioFile>, String> {
         }
     });
     Ok(files)
+}
+
+#[tauri::command]
+#[tauri::command]
+async fn delete_files(files: Vec<AudioFile>) -> Result<(), String> {
+    for file in files {
+        remove_file(&file.path).map_err(|e| format!("Failed to delete {}: {}", file.name, e))?;
+    }
+    Ok(())
 }
 
 #[tauri::command]
@@ -248,6 +258,7 @@ pub fn run() {
             deep_list_files,
             split_audio_files,
             check_ffmpeg,
+            delete_files,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

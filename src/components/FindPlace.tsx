@@ -260,15 +260,19 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                   bstState={bstState}
                   setBstState={setBstState}
                   onDeleteFiles={async (filesToDelete) => {
-                    // TODO: Implement actual file deletion using Tauri
-                    console.log("Would delete:", filesToDelete);
-                    const remainingFiles = files.slice(filesToDelete.length);
-                    setFiles(remainingFiles);
-                    setBstState({
-                      type: "success",
-                      index: 0,
-                      range: { start: 0, end: 0 },
-                    });
+                    try {
+                      await invoke("delete_files", { files: filesToDelete });
+                      const remainingFiles = files.slice(filesToDelete.length);
+                      setFiles(remainingFiles);
+                      setBstState({
+                        type: "success",
+                        index: 0,
+                        range: { start: 0, end: 0 },
+                      });
+                    } catch (error) {
+                      console.error("Failed to delete files:", error);
+                      alert("Failed to delete files: " + error);
+                    }
                   }}
                 />
               )}
