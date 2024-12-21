@@ -181,6 +181,32 @@ body {
 .content {
   position: relative;
   padding-top: 1rem;
+  min-height: calc(100vh - 60px); /* Account for footer */
+}
+
+.footer {
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-top: 1px solid var(--border-color);
+  background-color: white;
+}
+
+.about-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.about-page ul {
+  margin: 1rem 0;
+  padding-left: 2rem;
+}
+
+.about-page p {
+  line-height: 1.6;
+  margin: 1rem 0;
 }
 header {
   display: flex;

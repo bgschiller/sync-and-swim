@@ -4,8 +4,15 @@ import Menu from "./components/Menu";
 import FileTransfer from "./components/FileTransfer";
 import SplitFiles from "./components/SplitFiles";
 import FindPlace from "./components/FindPlace";
+import About from "./components/About";
 
 const menuOptions = [
+  {
+    id: "about",
+    title: "About",
+    description: "Learn more about this application",
+    component: About,
+  },
   {
     id: "transfer",
     title: "Load Audio onto Headphones",
@@ -57,7 +64,18 @@ function App() {
       ) : (
         <Menu options={menuOptions} onSelect={setSelectedOption} />
       )}
-    </main>
+    <div>
+      <main className="container">
+      </main>
+      <footer className="footer">
+        <a href="#" onClick={(e) => {
+          e.preventDefault();
+          setSelectedOption(menuOptions[0]); // About is first option
+        }}>
+          About this app
+        </a>
+      </footer>
+    </div>
   );
 }
 
