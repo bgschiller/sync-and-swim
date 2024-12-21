@@ -42,30 +42,29 @@ function App() {
   >(null);
 
   return (
-    <main className="container">
-      {selectedOption ? (
-        <div className="content">
-          <header>
-            <button
-              className="back-button"
-              onClick={() => setSelectedOption(null)}
-            >
-              ← Back to Menu
-            </button>
-            {selectedOption.title && <h2>{selectedOption.title}</h2>}
-          </header>
-          <selectedOption.component 
-            onSelectOption={(optionId) => {
-              const option = menuOptions.find(opt => opt.id === optionId);
-              if (option) setSelectedOption(option);
-            }}
-          />
-        </div>
-      ) : (
-        <Menu options={menuOptions} onSelect={setSelectedOption} />
-      )}
-    <div>
+    <div className="app-container">
       <main className="container">
+        {selectedOption ? (
+          <div className="content">
+            <header>
+              <button
+                className="back-button"
+                onClick={() => setSelectedOption(null)}
+              >
+                ← Back to Menu
+              </button>
+              {selectedOption.title && <h2>{selectedOption.title}</h2>}
+            </header>
+            <selectedOption.component 
+              onSelectOption={(optionId) => {
+                const option = menuOptions.find(opt => opt.id === optionId);
+                if (option) setSelectedOption(option);
+              }}
+            />
+          </div>
+        ) : (
+          <Menu options={menuOptions} onSelect={setSelectedOption} />
+        )}
       </main>
       <footer className="footer">
         <a href="#" onClick={(e) => {
