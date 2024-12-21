@@ -91,7 +91,7 @@ function AudioBinarySearch({
         range: { start: 0, end: files.length },
         index: 0,
         sense: "yes-i-remember",
-      }),
+      })
     );
   }
 
@@ -120,7 +120,7 @@ function AudioBinarySearch({
                   bstStep({
                     ...bstState,
                     sense: "yes-i-remember",
-                  }),
+                  })
                 );
               }}
               className="feedback-btn yes"
@@ -133,7 +133,7 @@ function AudioBinarySearch({
                   bstStep({
                     ...bstState,
                     sense: "no-i-dont-remember",
-                  }),
+                  })
                 );
               }}
               className="feedback-btn no"
@@ -215,7 +215,7 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
       range: { start: 0, end: 100 },
       index: 0,
       sense: "yes-i-remember",
-    }),
+    })
   );
 
   return (
@@ -242,11 +242,11 @@ function FindPlace({ onSelectOption }: FindPlaceProps) {
                   "list_audio_files",
                   {
                     path,
-                  },
+                  }
                 );
                 setFiles(audioFiles);
-                setFiles(audioFiles);
               }}
+              storageKey="findplace_audio_directory" // Add storageKey prop
             />
           </div>
 

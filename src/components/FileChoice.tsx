@@ -6,6 +6,7 @@ interface FileChoiceProps {
   label: string;
   value: string;
   onChange: (path: string) => void;
+  storageKey: string; // Add storageKey prop
 }
 
 function abbreviatePath(path: string): string {
@@ -28,9 +29,12 @@ function abbreviatePath(path: string): string {
   return path;
 }
 
-export function FileChoice({ label, value, onChange }: FileChoiceProps) {
-  const storageKey = `fileChoice_${label.toLowerCase().replace(/\s+/g, "_")}`;
-
+export function FileChoice({
+  label,
+  value,
+  onChange,
+  storageKey,
+}: FileChoiceProps) {
   useEffect(() => {
     const savedValue = localStorage.getItem(storageKey);
     if (savedValue && !value) {
@@ -52,7 +56,9 @@ export function FileChoice({ label, value, onChange }: FileChoiceProps) {
 
   return (
     <button
-      className={`file-choice-button ${value ? "file-choice-value" : "file-choice-placeholder"}`}
+      className={`file-choice-button ${
+        value ? "file-choice-value" : "file-choice-placeholder"
+      }`}
       onClick={handleSelect}
       title={value ? "change" : "select"}
     >

@@ -89,10 +89,11 @@ function SplitFiles() {
                     "list_audio_files",
                     {
                       path,
-                    },
+                    }
                   );
                   setFiles(audioFiles);
                 }}
+                storageKey="splitfiles_source_folder" // Add storageKey prop
               />
             </li>
             <li>
@@ -101,6 +102,7 @@ function SplitFiles() {
                 label="Destination Folder"
                 value={destDir}
                 onChange={(path) => setDestDir(path)}
+                storageKey="splitfiles_dest_folder" // Add storageKey prop
               />
             </li>
             <li>
@@ -115,7 +117,7 @@ function SplitFiles() {
                     value={chunkMinutes}
                     onChange={(e) =>
                       setChunkMinutes(
-                        Math.max(1, parseInt(e.target.value) || 1),
+                        Math.max(1, parseInt(e.target.value) || 1)
                       )
                     }
                   />

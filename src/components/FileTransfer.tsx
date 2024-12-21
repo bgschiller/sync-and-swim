@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { FileChoice } from "./FileChoice";
 import "./FileTransfer.css";
 import { invoke } from "@tauri-apps/api/core";
-import { open } from "@tauri-apps/plugin-dialog";
 import { listen } from "@tauri-apps/api/event";
 
 interface AudioFile {
@@ -32,7 +31,7 @@ function FileTransfer() {
   const [progress, setProgress] = useState<number>(0);
   const [isTransferring, setIsTransferring] = useState(false);
   const [transferMode, setTransferMode] = useState<"append" | "replace">(
-    "append",
+    "append"
   );
   const [existingFileCount, setExistingFileCount] = useState<number>(0);
 
@@ -49,36 +48,10 @@ function FileTransfer() {
 
     return () => {
       listen<CopyProgress>("copy-progress", () => {}).then((unlisten) =>
-        unlisten(),
+        unlisten()
       );
     };
   }, []);
-
-  async function selectSourceDir() {
-    const selected = await open({
-      directory: true,
-      multiple: false,
-      title: "Select Source Directory",
-    });
-    if (selected && !Array.isArray(selected)) {
-      setSourceDir(selected);
-      const audioFiles = await invoke<AudioFile[]>("list_audio_files", {
-        path: selected,
-      });
-      setFiles(audioFiles);
-    }
-  }
-
-  async function selectDestDir() {
-    const selected = await open({
-      directory: true,
-      multiple: false,
-      title: "Select Destination Directory",
-    });
-    if (selected && !Array.isArray(selected)) {
-      setDestDir(selected);
-    }
-  }
 
   function toggleDirectoryOrder(dirPath: string) {
     setFiles((prevFiles) => {
@@ -90,7 +63,7 @@ function FileTransfer() {
           acc[dir].push(file);
           return acc;
         },
-        {},
+        {}
       );
 
       if (filesByDir[dirPath]) {
@@ -137,7 +110,7 @@ function FileTransfer() {
       setIsTransferring(false);
       setProgress(0);
       setCurrentFile("");
-      
+
       // Refresh existing file count after transfer
       if (destDir) {
         const existingFiles = await invoke<AudioFile[]>("deep_list_files", {
@@ -177,10 +150,11 @@ function FileTransfer() {
                     "list_audio_files",
                     {
                       path,
-                    },
+                    }
                   );
                   setFiles(audioFiles);
                 }}
+                storageKey="filetransfer_source_folder" // Add storageKey prop
               />
             </li>
             <li>
@@ -196,13 +170,14 @@ function FileTransfer() {
                       "deep_list_files",
                       {
                         path,
-                      },
+                      }
                     );
                     setExistingFileCount(existingFiles.length);
                   } else {
                     setExistingFileCount(0);
                   }
                 }}
+                storageKey="filetransfer_dest_folder" // Add storageKey prop
               />
             </li>
             <li>
@@ -251,7 +226,7 @@ function FileTransfer() {
                   if (!acc[dir]) acc[dir] = [];
                   acc[dir].push(file);
                   return acc;
-                }, {}),
+                }, {})
               ).map(([dir, dirFiles]) =>
                 dir ? (
                   <li key={dir} className="top-of-map">
@@ -272,7 +247,9 @@ function FileTransfer() {
                       >
                         <span>
                           <span
-                            className={`directory-toggle ${expandedDirs.has(dir) ? "expanded" : ""}`}
+                            className={`directory-toggle ${
+                              expandedDirs.has(dir) ? "expanded" : ""
+                            }`}
                           >
                             ▶
                           </span>
@@ -303,7 +280,7 @@ function FileTransfer() {
                   </li>
                 ) : (
                   dirFiles.map((file) => <li key={file.path}>{file.name}</li>)
-                ),
+                )
               )}
             </ul>
           </div>
