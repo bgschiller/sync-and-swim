@@ -1,10 +1,8 @@
-import FindPlace from './FindPlace';
-
 interface MenuOption {
   id: string;
   title: string;
   description: string;
-  component: () => JSX.Element;
+  component: (props?: any) => JSX.Element;
 }
 
 interface MenuProps {

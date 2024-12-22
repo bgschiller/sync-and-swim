@@ -187,12 +187,15 @@ body {
 .footer {
   height: 60px;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   border-top: 1px solid var(--border-color);
   background-color: white;
 }
-
+.footer > * {
+  margin-right: 1rem;
+  margin-left: 1rem;
+}
 .about-page {
   max-width: 800px;
   margin: 0 auto;

@@ -5,6 +5,7 @@ import FileTransfer from "./components/FileTransfer";
 import SplitFiles from "./components/SplitFiles";
 import FindPlace from "./components/FindPlace";
 import About from "./components/About";
+import { open } from "@tauri-apps/plugin-shell";
 
 const menuOptions = [
   {
@@ -55,25 +56,36 @@ function App() {
               </button>
               {selectedOption.title && <h2>{selectedOption.title}</h2>}
             </header>
-            <selectedOption.component 
+            <selectedOption.component
               onSelectOption={(optionId) => {
-                const option = menuOptions.find(opt => opt.id === optionId);
+                const option = menuOptions.find((opt) => opt.id === optionId);
                 if (option) setSelectedOption(option);
               }}
             />
           </div>
         ) : (
-          <Menu options={menuOptions} onSelect={setSelectedOption} />
+          <div className="content">
+            <Menu options={menuOptions.slice(1)} onSelect={setSelectedOption} />
+            <footer className="footer">
+              <span>
+                Created by{" "}
+                <a href="#" onClick={() => open("https://brianschiller.com")}>
+                  Brian Schiller
+                </a>
+              </span>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setSelectedOption(menuOptions[0]); // About is first option
+                }}
+              >
+                About this app
+              </a>
+            </footer>
+          </div>
         )}
       </main>
-      <footer className="footer">
-        <a href="#" onClick={(e) => {
-          e.preventDefault();
-          setSelectedOption(menuOptions[0]); // About is first option
-        }}>
-          About this app
-        </a>
-      </footer>
     </div>
   );
 }
