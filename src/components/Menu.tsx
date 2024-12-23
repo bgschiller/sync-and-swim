@@ -13,7 +13,7 @@ interface MenuProps {
 function Menu({ options, onSelect }: MenuProps) {
   return (
     <div className="menu">
-      <h1>Audio File Manager</h1>
+      <h1>Sync + Swim</h1>
       <div className="menu-options">
         {options.map((option) => (
           <button

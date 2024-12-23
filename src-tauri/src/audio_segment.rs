@@ -14,10 +14,95 @@ pub struct SegmentProgress {
     pub total: usize,
 }
 
+fn silence_points(input_filename: &str, silence_duration_seconds: f64) -> Result<Vec<f64>> {
+    // Run ffmpeg command with output capture
+    let output = Command::new("ffmpeg")
+        .args([
+            "-i",
+            input_filename,
+            "-af",
+            &format!("silencedetect=n=-30dB:d={}", silence_duration_seconds),
+            "-f",
+            "null",
+            "-",
+        ])
+        .stderr(Stdio::piped())
+        .output()
+        .context("Failed to execute ffmpeg")?;
+
+    // Parse ffmpeg output to get split points
+    let output = String::from_utf8(output.stderr).context("Failed to parse ffmpeg output")?;
+    let mut silences = Vec::new();
+    for line in output.lines() {
+        if let Some(start) = line.find("silence_start:") {
+            let start = line[start + 14..].trim();
+            let start = start
+                .parse::<f64>()
+                .context("Failed to parse split point")?;
+            silences.push(start);
+        }
+    }
+
+    Ok(silences)
+}
+
+fn audio_file_duration(input_filename: &str) -> Result<f64> {
+    let output = Command::new("ffprobe")
+        .args([
+            "-v",
+            "error",
+            "-show_entries",
+            "format=duration",
+            "-of",
+            "default=noprint_wrappers=1:nokey=1",
+            input_filename,
+        ])
+        .output()
+        .context("Failed to execute ffprobe")?;
+
+    let duration = String::from_utf8(output.stdout).context("Failed to parse ffprobe output")?;
+    let duration = duration
+        .trim()
+        .parse::<f64>()
+        .context("Failed to parse duration")?;
+
+    Ok(duration)
+}
+
+fn split_points(input_filename: &str, segment_time: i32, cut_at_silence: bool) -> Result<Vec<f64>> {
+    if cut_at_silence {
+        let silences = silence_points(input_filename, 1.0)?;
+        let mut split_points: Vec<f64> = Vec::new();
+        let mut last_split = 0.0;
+        for silence in silences {
+            let potential_chunk_size = silence - last_split;
+            if potential_chunk_size > segment_time as f64 {
+                let num_segments = (potential_chunk_size / segment_time as f64).floor() as i32;
+                for i in 1..num_segments {
+                    split_points.push(last_split + i as f64 * segment_time as f64);
+                }
+                split_points.push(silence);
+                last_split = silence;
+            }
+        }
+        Ok(split_points)
+    } else {
+        let duration = audio_file_duration(input_filename)?;
+
+        let num_segments = (duration / segment_time as f64).ceil() as i32;
+        let split_points = (1..num_segments)
+            .map(|i| i as f64 * segment_time as f64)
+            .collect();
+
+        Ok(split_points)
+    }
+}
+
 pub fn segment_audio(
     input_filename: &str,
     output_folder: &str,
     segment_time: i32,
+    cut_at_silence: bool,
     window: &Window,
     index: usize,
     total: usize,
@@ -41,6 +126,8 @@ pub fn segment_audio(
         .context("Invalid input filename")?
         .to_string();
 
+    let splits = split_points(input_filename, segment_time, cut_at_silence)?;
+
     // Run ffmpeg command with output capture
     let mut child = Command::new("ffmpeg")
         .args([
@@ -48,8 +135,12 @@ pub fn segment_audio(
             input_filename,
             "-f",
             "segment",
-            "-segment_time",
-            &segment_time.to_string(),
+            "-segment_times",
+            &splits
+                .iter()
+                .map(|s| s.to_string())
+                .collect::<Vec<_>>()
+                .join(","),
             "-c",
             "copy",
             &output_pattern,

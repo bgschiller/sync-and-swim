@@ -19,6 +19,7 @@ function SplitFiles() {
   const [currentFile, setCurrentFile] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [ffmpegAvailable, setFfmpegAvailable] = useState<boolean | null>(null);
+  const [cutAtSilence, setCutAtSilence] = useState<boolean>(true);
 
   useEffect(() => {
     // Check if ffmpeg is available
@@ -51,6 +52,7 @@ function SplitFiles() {
         files,
         destPath: destDir,
         chunkMinutes,
+        cutAtSilence,
       });
       alert("Files split successfully!");
     } catch (error) {
@@ -123,6 +125,16 @@ function SplitFiles() {
                   />
                 </label>
               </div>
+            </li>
+            <li>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={cutAtSilence}
+                  onChange={(e) => setCutAtSilence(e.target.checked)}
+                />
+                Cut at silences (when possible)
+              </label>
             </li>
           </ol>
         </div>

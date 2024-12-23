@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
+use std::fs::remove_file;
 use std::path::PathBuf;
 use tauri::Emitter;
-use std::fs::remove_file;
 mod audio_segment;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -123,7 +123,7 @@ async fn check_ffmpeg() -> Result<bool, String> {
         .arg("-version")
         .output()
         .map_err(|_| "Failed to execute ffmpeg command".to_string())?;
-    
+
     Ok(output.status.success())
 }
 
@@ -132,6 +132,7 @@ async fn split_audio_files(
     files: Vec<AudioFile>,
     dest_path: &str,
     chunk_minutes: u32,
+    cut_at_silence: bool,
     window: tauri::Window,
 ) -> Result<(), String> {
     for (index, file) in files.iter().enumerate() {
@@ -156,6 +157,7 @@ async fn split_audio_files(
             &file.path,
             dest_path,
             segment_time,
+            cut_at_silence,
             &window,
             index,
             files.len(),

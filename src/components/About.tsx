@@ -3,7 +3,7 @@ import { open } from "@tauri-apps/plugin-shell";
 export default function About() {
   return (
     <div className="about-page">
-      <h1>About Swim Headphones Transfer</h1>
+      <h1>About Sync + Swim</h1>
       <p>
         My dad and I each have a pair of Shokz OpenSwim headphones. I put some
         audiobooks on them, but the process involved some steps that required
@@ -22,9 +22,20 @@ export default function About() {
         >
           an app can be a home-cooked meal
         </a>
-        ". I wanted to make something that was easy to use, and that I could
-        share with my dad and others. I hope it helps you enjoy your audiobooks
-        and podcasts more!
+        ": it can serve an audience of about five people and make no money. I
+        hope it helps you enjoy your swim ❤️
+      </p>
+      <p>
+        If you have suggestions or feedback, you can reach me at{" "}
+        <a href="mailto:bgschiller@gmail.com">bgschiller@gmail.com</a>. The code
+        is open source on{" "}
+        <a
+          href="#"
+          onClick={() => open("https://github.com/bgschiller/sync-and-swim")}
+        >
+          GitHub
+        </a>
+        .
       </p>
     </div>
   );
