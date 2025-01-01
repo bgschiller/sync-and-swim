@@ -69,23 +69,36 @@ fn audio_file_duration(input_filename: &str) -> Result<f64> {
     Ok(duration)
 }
 
+fn split_at_silences(silences: Vec<f64>, segment_time: i32) -> Vec<f64> {
+    let mut split_points: Vec<f64> = Vec::new();
+    let mut last_split = 0.0;
+    for silence in silences {
+        let potential_chunk_size = silence - last_split;
+        if potential_chunk_size > segment_time as f64 {
+            let num_segments = (potential_chunk_size / segment_time as f64).floor() as i32;
+            for i in 1..num_segments {
+                split_points.push(last_split + i as f64 * segment_time as f64);
+            }
+            split_points.push(silence);
+            last_split = silence;
+        }
+    }
+    split_points
+}
+
+#[test]
+fn test_split_at_silences_splits_early_if_necessary() {
+    //                          |            |            |
+    let silences = vec![80.0, 90.0, 110.0, 180.0, 200.0, 250.0, 310.0];
+    let segment_time = 100;
+    let split_points = split_at_silences(silences, segment_time);
+    assert_eq!(split_points, vec![90.0, 180.0, 250.0]);
+}
+
 fn split_points(input_filename: &str, segment_time: i32, cut_at_silence: bool) -> Result<Vec<f64>> {
     if cut_at_silence {
         let silences = silence_points(input_filename, 1.0)?;
-        let mut split_points: Vec<f64> = Vec::new();
-        let mut last_split = 0.0;
-        for silence in silences {
-            let potential_chunk_size = silence - last_split;
-            if potential_chunk_size > segment_time as f64 {
-                let num_segments = (potential_chunk_size / segment_time as f64).floor() as i32;
-                for i in 1..num_segments {
-                    split_points.push(last_split + i as f64 * segment_time as f64);
-                }
-                split_points.push(silence);
-                last_split = silence;
-            }
-        }
-        Ok(split_points)
+        Ok(split_at_silences(silences, segment_time))
     } else {
         let duration = audio_file_duration(input_filename)?;
 
