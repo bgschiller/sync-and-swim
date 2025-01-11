@@ -72,15 +72,21 @@ fn audio_file_duration(input_filename: &str) -> Result<f64> {
 fn split_at_silences(silences: Vec<f64>, segment_time: i32) -> Vec<f64> {
     let mut split_points: Vec<f64> = Vec::new();
     let mut last_split = 0.0;
-    for silence in silences {
-        let potential_chunk_size = silence - last_split;
-        if potential_chunk_size > segment_time as f64 {
-            let num_segments = (potential_chunk_size / segment_time as f64).floor() as i32;
-            for i in 1..num_segments {
-                split_points.push(last_split + i as f64 * segment_time as f64);
+    let mut last_split_ix: i64 = -1;
+    let mut idx = 0;
+    while idx < silences.len() {
+        let this_stretch = silences[idx] - last_split;
+        if this_stretch > segment_time as f64 {
+            if idx as i64 - 1 != last_split_ix {
+                last_split_ix = (idx - 1) as i64;
+                last_split = silences[last_split_ix as usize];
+                split_points.push(last_split);
+            } else {
+                last_split += segment_time as f64;
+                split_points.push(last_split);
             }
-            split_points.push(silence);
-            last_split = silence;
+        } else {
+            idx += 1;
         }
     }
     split_points
@@ -93,6 +99,14 @@ fn test_split_at_silences_splits_early_if_necessary() {
     let segment_time = 100;
     let split_points = split_at_silences(silences, segment_time);
     assert_eq!(split_points, vec![90.0, 180.0, 250.0]);
+}
+
+#[test]
+fn test_split_at_silences_splits_at_segment_time_if_no_silence_for_long_enough() {
+    let silences = vec![120.0, 350.0];
+    let segment_time = 100;
+    let split_points = split_at_silences(silences, segment_time);
+    assert_eq!(split_points, vec![100.0, 120.0, 220.0, 320.0]);
 }
 
 fn split_points(input_filename: &str, segment_time: i32, cut_at_silence: bool) -> Result<Vec<f64>> {
