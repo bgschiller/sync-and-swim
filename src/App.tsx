@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
 import Menu from "./components/Menu";
 import FileTransfer from "./components/FileTransfer";
@@ -38,9 +38,26 @@ const menuOptions = [
 ];
 
 function App() {
-  const [selectedOption, setSelectedOption] = useState<
-    (typeof menuOptions)[0] | null
-  >(null);
+  const [selectedOption, setSelectedOption] = useState<(typeof menuOptions)[0] | null>(() => {
+    const path = window.location.pathname.slice(1); // Remove leading slash
+    return menuOptions.find(opt => opt.id === path) || null;
+  });
+
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      const path = window.location.pathname.slice(1);
+      setSelectedOption(menuOptions.find(opt => opt.id === path) || null);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const navigateTo = (option: (typeof menuOptions)[0] | null) => {
+    setSelectedOption(option);
+    const path = option ? `/${option.id}` : '/';
+    history.pushState({}, '', path);
+  };
 
   return (
     <div className="app-container">
@@ -50,7 +67,7 @@ function App() {
             <header>
               <button
                 className="back-button"
-                onClick={() => setSelectedOption(null)}
+                onClick={() => navigateTo(null)}
               >
                 ← Back to Menu
               </button>
@@ -59,13 +76,13 @@ function App() {
             <selectedOption.component
               onSelectOption={(optionId) => {
                 const option = menuOptions.find((opt) => opt.id === optionId);
-                if (option) setSelectedOption(option);
+                if (option) navigateTo(option);
               }}
             />
           </div>
         ) : (
           <div className="content">
-            <Menu options={menuOptions.slice(1)} onSelect={setSelectedOption} />
+            <Menu options={menuOptions.slice(1)} onSelect={navigateTo} />
             <footer className="footer">
               <span>
                 Created by{" "}
@@ -77,7 +94,7 @@ function App() {
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  setSelectedOption(menuOptions[0]); // About is first option
+                  navigateTo(menuOptions[0]); // About is first option
                 }}
               >
                 About this app
