@@ -124,7 +124,11 @@ async fn check_ffmpeg() -> Result<bool, String> {
         .output()
         .map_err(|err| format!("Failed to execute ffmpeg command: {}", err).to_string());
 
-    // Print the output for a file on my desktop AI!
+    if let Ok(ref output) = output {
+        if let Ok(version_str) = String::from_utf8(output.stdout.clone()) {
+            println!("FFmpeg version info:\n{}", version_str);
+        }
+    }
 
     Ok(output?.status.success())
 }
