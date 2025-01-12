@@ -210,53 +210,56 @@ pub fn segment_audio(
         )
         .context("Failed to emit progress")?;
 
-    // use tokio to read from the Receiver<CommandEvent> `events` and write "segment-progress" to
-    // the window. AI!
-    // Read ffmpeg output line by line looking for the input file line
-    let mut started = false;
-    for line in reader.lines() {
-        let line = line.context("Failed to read line")?;
+    // Process events from the command
+    tauri::async_runtime::block_on(async move {
+        let mut started = false;
+        while let Ok(event) = events.recv().await {
+            match event {
+                tauri_plugin_shell::CommandEvent::Stderr(line) => {
+                    // Look for the input file line that indicates processing has started
+                    if line.contains("Input #0") {
+                        started = true;
+                        window
+                            .emit(
+                                "segment-progress",
+                                SegmentProgress {
+                                    file_name: file_name.clone(),
+                                    progress: 10.0, // Initial progress
+                                    completed: false,
+                                    index,
+                                    total,
+                                },
+                            )
+                            .context("Failed to emit progress")?;
+                    }
 
-        // Look for the input file line that indicates processing has started
-        if line.contains("Input #0") {
-            started = true;
-            window
-                .emit(
-                    "segment-progress",
-                    SegmentProgress {
-                        file_name: file_name.clone(),
-                        progress: 10.0, // Initial progress
-                        completed: false,
-                        index,
-                        total,
-                    },
-                )
-                .context("Failed to emit progress")?;
+                    // Once we've started, periodically update progress
+                    if started {
+                        window
+                            .emit(
+                                "segment-progress",
+                                SegmentProgress {
+                                    file_name: file_name.clone(),
+                                    progress: 50.0, // Mid-progress
+                                    completed: false,
+                                    index,
+                                    total,
+                                },
+                            )
+                            .context("Failed to emit progress")?;
+                    }
+                }
+                tauri_plugin_shell::CommandEvent::Terminated(status) => {
+                    if !status.code.unwrap_or(-1).eq(&0) {
+                        return Err(anyhow::anyhow!("ffmpeg command failed"));
+                    }
+                    break;
+                }
+                _ => {}
+            }
         }
-
-        // Once we've started, periodically update progress
-        if started {
-            window
-                .emit(
-                    "segment-progress",
-                    SegmentProgress {
-                        file_name: file_name.clone(),
-                        progress: 50.0, // Mid-progress
-                        completed: false,
-                        index,
-                        total,
-                    },
-                )
-                .context("Failed to emit progress")?;
-        }
-    }
-
-    // Wait for the process to complete
-    let status = child.wait().context("Failed to wait for ffmpeg")?;
-
-    if !status.success() {
-        return Err(anyhow::anyhow!("ffmpeg command failed"));
-    }
+        Ok::<(), anyhow::Error>(())
+    })?;
 
     // Emit completion
     window
