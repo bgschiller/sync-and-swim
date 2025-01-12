@@ -1,4 +1,5 @@
 use anyhow::{Context, Result};
+use regex::Regex;
 use std::fs;
 use std::path::Path;
 use tauri::{Emitter, Window};
@@ -239,10 +240,26 @@ pub async fn segment_audio(
                 // [segment @ 0x14ae05cb0] opening 'the-lacuna-smol/long-way-0004.mp3' for writing
                 // and so on. We expect split_count of these lines.
                 // If a line matches, emit progress according to how far into split_count we are
-                // Parse the line with a regex to get the filename. AI!
-
-                // Once we've started, periodically update progress
+                // Parse segment output lines to track progress
                 if started {
+                    let re = Regex::new(r"Opening '.*?(\d+)\.mp3' for writing").unwrap();
+                    if let Some(caps) = re.captures(&line) {
+                        if let Some(num_str) = caps.get(1) {
+                            if let Ok(segment_num) = num_str.as_str().parse::<usize>() {
+                                let progress = (segment_num as f64 / split_counts as f64) * 100.0;
+                                win.emit(
+                                    "segment-progress",
+                                    SegmentProgress {
+                                        file_name: fname.clone(),
+                                        progress,
+                                        completed: false,
+                                        index,
+                                        total,
+                                    },
+                                ).context("Failed to emit progress")?;
+                            }
+                        }
+                    }
                     win.emit(
                         "segment-progress",
                         SegmentProgress {
