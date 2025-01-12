@@ -1,10 +1,10 @@
 use serde::{Deserialize, Serialize};
+use std::env;
 use std::fs;
 use std::fs::remove_file;
 use std::path::PathBuf;
-use std::env;
-use std::io::Write;
-use tauri::{Emitter, Manager};
+use tauri::Emitter;
+use tauri_plugin_shell::ShellExt;
 mod audio_segment;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -120,30 +120,16 @@ async fn delete_files(files: Vec<AudioFile>) -> Result<(), String> {
 }
 
 #[tauri::command]
-async fn check_ffmpeg() -> Result<bool, String> {
-    let output = std::process::Command::new("ffmpeg")
-        .arg("-version")
-        .output()
-        .map_err(|err| format!("Failed to execute ffmpeg command: {}", err).to_string())?;
-
-    // Write output to log file
-    if let Some(home_dir) = env::var_os("HOME") {
-        let log_path = PathBuf::from(home_dir).join("Desktop").join("sync-n-swim.log");
-        if let Ok(mut file) = std::fs::OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(log_path)
-        {
-            let timestamp = chrono::Local::now().format("%Y-%m-%d %H:%M:%S");
-            writeln!(file, "\n=== FFmpeg Version Check: {} ===", timestamp)
-                .map_err(|e| format!("Failed to write to log: {}", e))?;
-            
-            if let Ok(version_str) = String::from_utf8(output.stdout.clone()) {
-                writeln!(file, "{}", version_str)
-                    .map_err(|e| format!("Failed to write to log: {}", e))?;
-            }
-        }
-    }
+async fn check_ffmpeg(app: tauri::AppHandle) -> Result<bool, String> {
+    let shell = app.shell();
+    let output = tauri::async_runtime::block_on(async move {
+        shell
+            .command("which")
+            .args(["ffmpeg"])
+            .output()
+            .await
+            .unwrap()
+    });
 
     Ok(output.status.success())
 }
@@ -271,6 +257,15 @@ async fn copy_files(
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(
+            tauri_plugin_log::Builder::new()
+                .target(tauri_plugin_log::Target::new(
+                    tauri_plugin_log::TargetKind::LogDir {
+                        file_name: Some("logs".to_string()),
+                    },
+                ))
+                .build(),
+        )
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
