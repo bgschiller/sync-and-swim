@@ -2,8 +2,8 @@ use anyhow::{Context, Result};
 use std::fs;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
-use std::process::{Command, Stdio};
 use tauri::{Emitter, Window};
+use tauri_plugin_shell::ShellExt;
 
 #[derive(Clone, serde::Serialize)]
 pub struct SegmentProgress {
@@ -15,23 +15,27 @@ pub struct SegmentProgress {
 }
 
 fn silence_points(app: &tauri::AppHandle, input_filename: &str, silence_duration_seconds: f64) -> Result<Vec<f64>> {
-    // Run ffmpeg command with output capture
-    let output = Command::new("ffmpeg")
-        .args([
-            "-i",
-            input_filename,
-            "-af",
-            &format!("silencedetect=n=-30dB:d={}", silence_duration_seconds),
-            "-f",
-            "null",
-            "-",
-        ])
-        .stderr(Stdio::piped())
-        .output()
-        .context("Failed to execute ffmpeg")?;
+    // Run ffmpeg command with output capture using shell plugin
+    let shell = app.shell();
+    let output = tauri::async_runtime::block_on(async move {
+        shell
+            .command("ffmpeg")
+            .args([
+                "-i",
+                input_filename,
+                "-af",
+                &format!("silencedetect=n=-30dB:d={}", silence_duration_seconds),
+                "-f",
+                "null",
+                "-",
+            ])
+            .output()
+            .await
+            .context("Failed to execute ffmpeg")?
+    });
 
     // Parse ffmpeg output to get split points
-    let output = String::from_utf8(output.stderr).context("Failed to parse ffmpeg output")?;
+    let output = String::from_utf8(output.stderr.clone()).context("Failed to parse ffmpeg output")?;
     let mut silences = Vec::new();
     for line in output.lines() {
         if let Some(start) = line.find("silence_start:") {
@@ -47,20 +51,25 @@ fn silence_points(app: &tauri::AppHandle, input_filename: &str, silence_duration
 }
 
 fn audio_file_duration(app: &tauri::AppHandle, input_filename: &str) -> Result<f64> {
-    let output = Command::new("ffprobe")
-        .args([
-            "-v",
-            "error",
-            "-show_entries",
-            "format=duration",
-            "-of",
-            "default=noprint_wrappers=1:nokey=1",
-            input_filename,
-        ])
-        .output()
-        .context("Failed to execute ffprobe")?;
+    let shell = app.shell();
+    let output = tauri::async_runtime::block_on(async move {
+        shell
+            .command("ffprobe")
+            .args([
+                "-v",
+                "error",
+                "-show_entries",
+                "format=duration",
+                "-of",
+                "default=noprint_wrappers=1:nokey=1",
+                input_filename,
+            ])
+            .output()
+            .await
+            .context("Failed to execute ffprobe")?
+    });
 
-    let duration = String::from_utf8(output.stdout).context("Failed to parse ffprobe output")?;
+    let duration = String::from_utf8(output.stdout.clone()).context("Failed to parse ffprobe output")?;
     let duration = duration
         .trim()
         .parse::<f64>()
