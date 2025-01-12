@@ -14,7 +14,11 @@ pub struct SegmentProgress {
     pub total: usize,
 }
 
-fn silence_points(app: &tauri::AppHandle, input_filename: &str, silence_duration_seconds: f64) -> Result<Vec<f64>> {
+fn silence_points(
+    app: &tauri::AppHandle,
+    input_filename: &str,
+    silence_duration_seconds: f64,
+) -> Result<Vec<f64>> {
     // Run ffmpeg command with output capture using shell plugin
     let shell = app.shell();
     let output = tauri::async_runtime::block_on(async move {
@@ -35,7 +39,8 @@ fn silence_points(app: &tauri::AppHandle, input_filename: &str, silence_duration
     });
 
     // Parse ffmpeg output to get split points
-    let output = String::from_utf8(output.stderr.clone()).context("Failed to parse ffmpeg output")?;
+    let output =
+        String::from_utf8(output.stderr.clone()).context("Failed to parse ffmpeg output")?;
     let mut silences = Vec::new();
     for line in output.lines() {
         if let Some(start) = line.find("silence_start:") {
@@ -69,7 +74,8 @@ fn audio_file_duration(app: &tauri::AppHandle, input_filename: &str) -> Result<f
             .context("Failed to execute ffprobe")?
     });
 
-    let duration = String::from_utf8(output.stdout.clone()).context("Failed to parse ffprobe output")?;
+    let duration =
+        String::from_utf8(output.stdout.clone()).context("Failed to parse ffprobe output")?;
     let duration = duration
         .trim()
         .parse::<f64>()
@@ -118,7 +124,12 @@ fn test_split_at_silences_splits_at_segment_time_if_no_silence_for_long_enough()
     assert_eq!(split_points, vec![100.0, 120.0, 220.0, 320.0]);
 }
 
-fn split_points(app: &tauri::AppHandle, input_filename: &str, segment_time: i32, cut_at_silence: bool) -> Result<Vec<f64>> {
+fn split_points(
+    app: &tauri::AppHandle,
+    input_filename: &str,
+    segment_time: i32,
+    cut_at_silence: bool,
+) -> Result<Vec<f64>> {
     if cut_at_silence {
         let silences = silence_points(app, input_filename, 1.0)?;
         Ok(split_at_silences(silences, segment_time))
@@ -165,8 +176,9 @@ pub fn segment_audio(
 
     let splits = split_points(app, input_filename, segment_time, cut_at_silence)?;
 
-    // Run ffmpeg command with output capture
-    let mut child = Command::new("ffmpeg")
+    let shell = app.shell();
+    let (events, cmd) = shell
+        .command("ffmpeg")
         .args([
             "-i",
             input_filename,
@@ -182,12 +194,7 @@ pub fn segment_audio(
             "copy",
             &output_pattern,
         ])
-        .stderr(Stdio::piped())
-        .spawn()
-        .context("Failed to execute ffmpeg")?;
-
-    let stderr = child.stderr.take().context("Failed to capture stderr")?;
-    let reader = BufReader::new(stderr);
+        .spawn()?;
 
     // Emit initial progress
     window
@@ -203,6 +210,8 @@ pub fn segment_audio(
         )
         .context("Failed to emit progress")?;
 
+    // use tokio to read from the Receiver<CommandEvent> `events` and write "segment-progress" to
+    // the window. AI!
     // Read ffmpeg output line by line looking for the input file line
     let mut started = false;
     for line in reader.lines() {
