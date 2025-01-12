@@ -1,8 +1,8 @@
 use anyhow::{Context, Result};
 use std::fs;
-use std::io::{BufRead, BufReader};
 use std::path::Path;
 use tauri::{Emitter, Window};
+use tauri_plugin_shell::process::CommandEvent;
 use tauri_plugin_shell::ShellExt;
 
 #[derive(Clone, serde::Serialize)]
@@ -14,29 +14,27 @@ pub struct SegmentProgress {
     pub total: usize,
 }
 
-fn silence_points(
+async fn silence_points(
     app: &tauri::AppHandle,
     input_filename: &str,
     silence_duration_seconds: f64,
 ) -> Result<Vec<f64>> {
     // Run ffmpeg command with output capture using shell plugin
     let shell = app.shell();
-    let output = tauri::async_runtime::block_on(async move {
-        shell
-            .command("ffmpeg")
-            .args([
-                "-i",
-                input_filename,
-                "-af",
-                &format!("silencedetect=n=-30dB:d={}", silence_duration_seconds),
-                "-f",
-                "null",
-                "-",
-            ])
-            .output()
-            .await
-            .context("Failed to execute ffmpeg")?
-    });
+    let output = shell
+        .command("ffmpeg")
+        .args([
+            "-i",
+            input_filename,
+            "-af",
+            &format!("silencedetect=n=-30dB:d={}", silence_duration_seconds),
+            "-f",
+            "null",
+            "-",
+        ])
+        .output()
+        .await
+        .context("Failed to execute ffmpeg")?;
 
     // Parse ffmpeg output to get split points
     let output =
@@ -71,8 +69,8 @@ fn audio_file_duration(app: &tauri::AppHandle, input_filename: &str) -> Result<f
             ])
             .output()
             .await
-            .context("Failed to execute ffprobe")?
-    });
+            .context("Failed to execute ffprobe")
+    })?;
 
     let duration =
         String::from_utf8(output.stdout.clone()).context("Failed to parse ffprobe output")?;
@@ -124,17 +122,17 @@ fn test_split_at_silences_splits_at_segment_time_if_no_silence_for_long_enough()
     assert_eq!(split_points, vec![100.0, 120.0, 220.0, 320.0]);
 }
 
-fn split_points(
+async fn split_points(
     app: &tauri::AppHandle,
     input_filename: &str,
     segment_time: i32,
     cut_at_silence: bool,
 ) -> Result<Vec<f64>> {
     if cut_at_silence {
-        let silences = silence_points(app, input_filename, 1.0)?;
+        let silences = silence_points(app, input_filename, 1.0).await?;
         Ok(split_at_silences(silences, segment_time))
     } else {
-        let duration = audio_file_duration(input_filename)?;
+        let duration = audio_file_duration(app, input_filename)?;
 
         let num_segments = (duration / segment_time as f64).ceil() as i32;
         let split_points = (1..num_segments)
@@ -145,7 +143,7 @@ fn split_points(
     }
 }
 
-pub fn segment_audio(
+pub async fn segment_audio(
     app: &tauri::AppHandle,
     input_filename: &str,
     output_folder: &str,
@@ -174,10 +172,11 @@ pub fn segment_audio(
         .context("Invalid input filename")?
         .to_string();
 
-    let splits = split_points(app, input_filename, segment_time, cut_at_silence)?;
+    let splits = split_points(app, input_filename, segment_time, cut_at_silence).await?;
+    let split_counts = splits.len();
 
     let shell = app.shell();
-    let (events, cmd) = shell
+    let (mut events, _cmd) = shell
         .command("ffmpeg")
         .args([
             "-i",
@@ -210,56 +209,62 @@ pub fn segment_audio(
         )
         .context("Failed to emit progress")?;
 
+    let win = window.clone();
+    let fname = file_name.clone();
     // Process events from the command
-    tauri::async_runtime::block_on(async move {
-        let mut started = false;
-        while let Ok(event) = events.recv().await {
-            match event {
-                tauri_plugin_shell::CommandEvent::Stderr(line) => {
-                    // Look for the input file line that indicates processing has started
-                    if line.contains("Input #0") {
-                        started = true;
-                        window
-                            .emit(
-                                "segment-progress",
-                                SegmentProgress {
-                                    file_name: file_name.clone(),
-                                    progress: 10.0, // Initial progress
-                                    completed: false,
-                                    index,
-                                    total,
-                                },
-                            )
-                            .context("Failed to emit progress")?;
-                    }
+    let mut started = false;
+    while let Some(event) = events.recv().await {
+        match event {
+            CommandEvent::Stderr(line) => {
+                let line = String::from_utf8(line).expect("line wasn't utf8");
+                // Look for the input file line that indicates processing has started
+                if line.contains("Input #0") {
+                    started = true;
+                    win.emit(
+                        "segment-progress",
+                        SegmentProgress {
+                            file_name: fname.clone(),
+                            progress: 0.0, // Initial progress
+                            completed: false,
+                            index,
+                            total,
+                        },
+                    )
+                    .context("Failed to emit progress")?;
+                }
+                // The output will look like
+                // [segment @ 0x14ae05cb0] Opening 'the-lacuna-smol/long-way-0001.mp3' for writing
+                // [segment @ 0x14ae05cb0] Opening 'the-lacuna-smol/long-way-0002.mp3' for writing
+                // [segment @ 0x14ae05cb0] Opening 'the-lacuna-smol/long-way-0003.mp3' for writing
+                // [segment @ 0x14ae05cb0] opening 'the-lacuna-smol/long-way-0004.mp3' for writing
+                // and so on. We expect split_count of these lines.
+                // If a line matches, emit progress according to how far into split_count we are
+                // Parse the line with a regex to get the filename. AI!
 
-                    // Once we've started, periodically update progress
-                    if started {
-                        window
-                            .emit(
-                                "segment-progress",
-                                SegmentProgress {
-                                    file_name: file_name.clone(),
-                                    progress: 50.0, // Mid-progress
-                                    completed: false,
-                                    index,
-                                    total,
-                                },
-                            )
-                            .context("Failed to emit progress")?;
-                    }
+                // Once we've started, periodically update progress
+                if started {
+                    win.emit(
+                        "segment-progress",
+                        SegmentProgress {
+                            file_name: fname.clone(),
+                            progress: 50.0, // Mid-progress
+                            completed: false,
+                            index,
+                            total,
+                        },
+                    )
+                    .context("Failed to emit progress")?;
                 }
-                tauri_plugin_shell::CommandEvent::Terminated(status) => {
-                    if !status.code.unwrap_or(-1).eq(&0) {
-                        return Err(anyhow::anyhow!("ffmpeg command failed"));
-                    }
-                    break;
-                }
-                _ => {}
             }
+            CommandEvent::Terminated(status) => {
+                if !status.code.unwrap_or(-1).eq(&0) {
+                    return Err(anyhow::anyhow!("ffmpeg command failed"));
+                }
+                break;
+            }
+            _ => {}
         }
-        Ok::<(), anyhow::Error>(())
-    })?;
+    }
 
     // Emit completion
     window
