@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::fs::remove_file;
 use std::path::PathBuf;
-use tauri::Emitter;
+use tauri::{Emitter, Manager};
 mod audio_segment;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -122,9 +122,11 @@ async fn check_ffmpeg() -> Result<bool, String> {
     let output = std::process::Command::new("ffmpeg")
         .arg("-version")
         .output()
-        .map_err(|_| "Failed to execute ffmpeg command".to_string())?;
+        .map_err(|err| format!("Failed to execute ffmpeg command: {}", err).to_string());
 
-    Ok(output.status.success())
+    // Print the output for a file on my desktop AI!
+
+    Ok(output?.status.success())
 }
 
 #[tauri::command]
