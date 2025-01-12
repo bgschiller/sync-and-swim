@@ -38,25 +38,27 @@ const menuOptions = [
 ];
 
 function App() {
-  const [selectedOption, setSelectedOption] = useState<(typeof menuOptions)[0] | null>(() => {
+  const [selectedOption, setSelectedOption] = useState<
+    (typeof menuOptions)[0] | null
+  >(() => {
     const path = window.location.pathname.slice(1); // Remove leading slash
-    return menuOptions.find(opt => opt.id === path) || null;
+    return menuOptions.find((opt) => opt.id === path) || null;
   });
 
   useEffect(() => {
-    const handlePopState = (event: PopStateEvent) => {
+    const handlePopState = (_event: PopStateEvent) => {
       const path = window.location.pathname.slice(1);
-      setSelectedOption(menuOptions.find(opt => opt.id === path) || null);
+      setSelectedOption(menuOptions.find((opt) => opt.id === path) || null);
     };
 
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
   const navigateTo = (option: (typeof menuOptions)[0] | null) => {
     setSelectedOption(option);
-    const path = option ? `/${option.id}` : '/';
-    history.pushState({}, '', path);
+    const path = option ? `/${option.id}` : "/";
+    history.pushState({}, "", path);
   };
 
   return (
@@ -65,10 +67,7 @@ function App() {
         {selectedOption ? (
           <div className="content">
             <header>
-              <button
-                className="back-button"
-                onClick={() => navigateTo(null)}
-              >
+              <button className="back-button" onClick={() => navigateTo(null)}>
                 ← Back to Menu
               </button>
               {selectedOption.title && <h2>{selectedOption.title}</h2>}
