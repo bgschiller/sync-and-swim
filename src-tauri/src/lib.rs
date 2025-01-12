@@ -161,6 +161,7 @@ async fn split_audio_files(
 
         // Call segment_audio for each file with progress tracking
         audio_segment::segment_audio(
+            &window.app_handle(),
             &file.path,
             dest_path,
             segment_time,

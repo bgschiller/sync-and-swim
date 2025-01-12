@@ -14,7 +14,7 @@ pub struct SegmentProgress {
     pub total: usize,
 }
 
-fn silence_points(input_filename: &str, silence_duration_seconds: f64) -> Result<Vec<f64>> {
+fn silence_points(app: &tauri::AppHandle, input_filename: &str, silence_duration_seconds: f64) -> Result<Vec<f64>> {
     // Run ffmpeg command with output capture
     let output = Command::new("ffmpeg")
         .args([
@@ -46,7 +46,7 @@ fn silence_points(input_filename: &str, silence_duration_seconds: f64) -> Result
     Ok(silences)
 }
 
-fn audio_file_duration(input_filename: &str) -> Result<f64> {
+fn audio_file_duration(app: &tauri::AppHandle, input_filename: &str) -> Result<f64> {
     let output = Command::new("ffprobe")
         .args([
             "-v",
@@ -109,9 +109,9 @@ fn test_split_at_silences_splits_at_segment_time_if_no_silence_for_long_enough()
     assert_eq!(split_points, vec![100.0, 120.0, 220.0, 320.0]);
 }
 
-fn split_points(input_filename: &str, segment_time: i32, cut_at_silence: bool) -> Result<Vec<f64>> {
+fn split_points(app: &tauri::AppHandle, input_filename: &str, segment_time: i32, cut_at_silence: bool) -> Result<Vec<f64>> {
     if cut_at_silence {
-        let silences = silence_points(input_filename, 1.0)?;
+        let silences = silence_points(app, input_filename, 1.0)?;
         Ok(split_at_silences(silences, segment_time))
     } else {
         let duration = audio_file_duration(input_filename)?;
@@ -126,6 +126,7 @@ fn split_points(input_filename: &str, segment_time: i32, cut_at_silence: bool) -
 }
 
 pub fn segment_audio(
+    app: &tauri::AppHandle,
     input_filename: &str,
     output_folder: &str,
     segment_time: i32,
@@ -153,7 +154,7 @@ pub fn segment_audio(
         .context("Invalid input filename")?
         .to_string();
 
-    let splits = split_points(input_filename, segment_time, cut_at_silence)?;
+    let splits = split_points(app, input_filename, segment_time, cut_at_silence)?;
 
     // Run ffmpeg command with output capture
     let mut child = Command::new("ffmpeg")
