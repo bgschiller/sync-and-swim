@@ -124,12 +124,7 @@ async fn check_ffmpeg() -> Result<bool, String> {
         .output()
         .map_err(|err| format!("Failed to execute ffmpeg command: {}", err).to_string());
 
-    if let Ok(ref output) = output {
-        if let Ok(version_str) = String::from_utf8(output.stdout.clone()) {
-            println!("FFmpeg version info:\n{}", version_str);
-        }
-    }
-
+    // Open a file, ~/Desktop/sync-n-swim.log and write the output to it. AI!
     Ok(output?.status.success())
 }
 
