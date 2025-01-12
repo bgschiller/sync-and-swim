@@ -2,6 +2,8 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::fs::remove_file;
 use std::path::PathBuf;
+use std::env;
+use std::io::Write;
 use tauri::{Emitter, Manager};
 mod audio_segment;
 
@@ -122,10 +124,28 @@ async fn check_ffmpeg() -> Result<bool, String> {
     let output = std::process::Command::new("ffmpeg")
         .arg("-version")
         .output()
-        .map_err(|err| format!("Failed to execute ffmpeg command: {}", err).to_string());
+        .map_err(|err| format!("Failed to execute ffmpeg command: {}", err).to_string())?;
 
-    // Open a file, ~/Desktop/sync-n-swim.log and write the output to it. AI!
-    Ok(output?.status.success())
+    // Write output to log file
+    if let Some(home_dir) = env::var_os("HOME") {
+        let log_path = PathBuf::from(home_dir).join("Desktop").join("sync-n-swim.log");
+        if let Ok(mut file) = std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(log_path)
+        {
+            let timestamp = chrono::Local::now().format("%Y-%m-%d %H:%M:%S");
+            writeln!(file, "\n=== FFmpeg Version Check: {} ===", timestamp)
+                .map_err(|e| format!("Failed to write to log: {}", e))?;
+            
+            if let Ok(version_str) = String::from_utf8(output.stdout.clone()) {
+                writeln!(file, "{}", version_str)
+                    .map_err(|e| format!("Failed to write to log: {}", e))?;
+            }
+        }
+    }
+
+    Ok(output.status.success())
 }
 
 #[tauri::command]
