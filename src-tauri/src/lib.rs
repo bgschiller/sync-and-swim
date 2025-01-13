@@ -122,14 +122,12 @@ async fn delete_files(files: Vec<AudioFile>) -> Result<(), String> {
 #[tauri::command]
 async fn check_ffmpeg(app: tauri::AppHandle) -> Result<bool, String> {
     let shell = app.shell();
-    let output = tauri::async_runtime::block_on(async move {
-        shell
-            .command("which")
-            .args(["ffmpeg"])
-            .output()
-            .await
-            .unwrap()
-    });
+    let output = shell
+        .command("which")
+        .args(["ffmpeg"])
+        .output()
+        .await
+        .unwrap();
 
     Ok(output.status.success())
 }
@@ -161,7 +159,6 @@ async fn split_audio_files(
 
         // Call segment_audio for each file with progress tracking
         audio_segment::segment_audio(
-            &window.app_handle(),
             &file.path,
             dest_path,
             segment_time,
@@ -170,6 +167,7 @@ async fn split_audio_files(
             index,
             files.len(),
         )
+        .await
         .map_err(|e| format!("Failed to split {}: {}", file.name, e))?;
 
         // Emit progress completion

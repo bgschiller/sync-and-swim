@@ -2,7 +2,7 @@ use anyhow::{Context, Result};
 use regex::Regex;
 use std::fs;
 use std::path::Path;
-use tauri::{Emitter, Window};
+use tauri::{Emitter, Manager, Window};
 use tauri_plugin_shell::process::CommandEvent;
 use tauri_plugin_shell::ShellExt;
 
@@ -145,7 +145,6 @@ async fn split_points(
 }
 
 pub async fn segment_audio(
-    app: &tauri::AppHandle,
     input_filename: &str,
     output_folder: &str,
     segment_time: i32,
@@ -154,6 +153,7 @@ pub async fn segment_audio(
     index: usize,
     total: usize,
 ) -> Result<()> {
+    let app = window.app_handle();
     // Ensure output directory exists
     fs::create_dir_all(output_folder)?;
 
@@ -213,14 +213,12 @@ pub async fn segment_audio(
     let win = window.clone();
     let fname = file_name.clone();
     // Process events from the command
-    let mut started = false;
     while let Some(event) = events.recv().await {
         match event {
             CommandEvent::Stderr(line) => {
                 let line = String::from_utf8(line).expect("line wasn't utf8");
                 // Look for the input file line that indicates processing has started
                 if line.contains("Input #0") {
-                    started = true;
                     win.emit(
                         "segment-progress",
                         SegmentProgress {
@@ -241,42 +239,42 @@ pub async fn segment_audio(
                 // and so on. We expect split_count of these lines.
                 // If a line matches, emit progress according to how far into split_count we are
                 // Parse segment output lines to track progress
-                if started {
-                    let re = Regex::new(r"Opening '.*?(\d+)\.mp3' for writing").unwrap();
-                    if let Some(caps) = re.captures(&line) {
-                        if let Some(num_str) = caps.get(1) {
-                            if let Ok(segment_num) = num_str.as_str().parse::<usize>() {
-                                let progress = (segment_num as f64 / split_counts as f64) * 100.0;
-                                win.emit(
-                                    "segment-progress",
-                                    SegmentProgress {
-                                        file_name: fname.clone(),
-                                        progress,
-                                        completed: false,
-                                        index,
-                                        total,
-                                    },
-                                ).context("Failed to emit progress")?;
-                            }
+                let re = Regex::new(r"Opening '.*?(\d+)\.mp3' for writing").unwrap();
+                if let Some(caps) = re.captures(&line) {
+                    if let Some(num_str) = caps.get(1) {
+                        if let Ok(segment_num) = num_str.as_str().parse::<usize>() {
+                            let progress = (segment_num as f64 / split_counts as f64) * 100.0;
+                            win.emit(
+                                "segment-progress",
+                                SegmentProgress {
+                                    file_name: fname.clone(),
+                                    progress,
+                                    completed: false,
+                                    index,
+                                    total,
+                                },
+                            )
+                            .context("Failed to emit progress")?;
                         }
                     }
-                    win.emit(
-                        "segment-progress",
-                        SegmentProgress {
-                            file_name: fname.clone(),
-                            progress: 50.0, // Mid-progress
-                            completed: false,
-                            index,
-                            total,
-                        },
-                    )
-                    .context("Failed to emit progress")?;
                 }
             }
             CommandEvent::Terminated(status) => {
                 if !status.code.unwrap_or(-1).eq(&0) {
                     return Err(anyhow::anyhow!("ffmpeg command failed"));
                 }
+                win.emit(
+                    "segment-progress",
+                    SegmentProgress {
+                        file_name: fname.clone(),
+                        progress: 100.0,
+                        completed: true,
+                        index,
+                        total,
+                    },
+                )
+                .context("Failed to emit progress")?;
+
                 break;
             }
             _ => {}
