@@ -1,8 +1,8 @@
 [package]
-name = "swim-headphones-transfer"
+name = "sync-and-swim"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+description = "An app for loading Shokz OpenSwim headphones with music and audiobooks"
+authors = ["Brian Schiller <bgschiller@gmail.com>"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

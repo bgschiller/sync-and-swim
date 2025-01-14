@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "sync + swim",
+  "productName": "Sync + Swim",
   "version": "0.0.1",
   "identifier": "com.brianschiller.sync-and-swim",
   "build": {
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "swim-headphones-transfer",
+        "title": "Sync + Swim",
         "width": 1200,
         "height": 800
       }
