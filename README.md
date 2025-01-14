@@ -68,3 +68,4 @@ This app is a side project for no money. I'm happy to accept pull requests and e
 - A better logo. This one is ugly, and looks out of place in the mac dock without rounded corners.
 - Use ffmpeg via an FFI instead of a child process. I couldn't figure out how to make that work, but it would be nice to lift the requirement that a user has ffmpeg installed.
 - Figure out code signing for the Mac and Windows apps. Whatever we can do (short of paying $99/year) to make the app easier to install for laypeople would be great.
+- Make it prettier. I think this design is O-kay but not great. I'm not at all bothered if you can make improvements.
