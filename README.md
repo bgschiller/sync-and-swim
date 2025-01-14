@@ -44,7 +44,7 @@ This works best on audiobooks that are split into smaller pieces (with the "Cut 
 
 ## How to build
 
-This project is built using [Tauri](https://v2.tauri.app/).Follow the [Prerequisites instructions on the Tauri website](https://v2.tauri.app/start/prerequisites/) to install Rust and Node.js.
+This project is built using [Tauri](https://v2.tauri.app/). Follow the [Prerequisites instructions on the Tauri website](https://v2.tauri.app/start/prerequisites/) to install Rust and Node.js.
 
 Once you have those installed, run
 
