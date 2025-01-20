@@ -72,7 +72,7 @@
 }
 
 .file-list li:hover {
-  background-color: #e8e8e8;
+  background-color: var(--hover-background);
 }
 
 .file-list li.file-status-current:hover {
