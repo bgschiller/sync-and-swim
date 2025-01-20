@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import "./App.css";
 import Menu from "./components/Menu";
 import FileTransfer from "./components/FileTransfer";
@@ -37,7 +38,7 @@ const menuOptions = [
   },
 ];
 
-function App() {
+function AppContent() {
   const [selectedOption, setSelectedOption] = useState<
     (typeof menuOptions)[0] | null
   >(() => {
@@ -89,20 +90,44 @@ function App() {
                   Brian Schiller
                 </a>
               </span>
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigateTo(menuOptions[0]); // About is first option
-                }}
-              >
-                About this app
-              </a>
+              <div className="footer-links">
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo(menuOptions[0]); // About is first option
+                  }}
+                >
+                  About this app
+                </a>
+                <ThemeToggle />
+              </div>
             </footer>
           </div>
         )}
       </main>
     </div>
+  );
+}
+
+function ThemeToggle() {
+  const { theme, toggleTheme } = useTheme();
+  return (
+    <button 
+      onClick={toggleTheme}
+      className="theme-toggle"
+      aria-label="Toggle theme"
+    >
+      {theme === 'light' ? '🌙' : '☀️'}
+    </button>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }
 
