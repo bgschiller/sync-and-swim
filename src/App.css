@@ -289,7 +289,7 @@ button:disabled {
 }
 
 .file-list {
-  background-color: var(--background);
+  background-color: var(--card-background);
   padding: 1.5rem;
   border-radius: 6px;
   border: 1px solid var(--border-color);
@@ -321,6 +321,11 @@ button:disabled {
   border-bottom: 1px solid var(--border-color);
   color: var(--text-color);
   text-align: left;
+  padding: 0.5rem;
+}
+
+.file-list li:hover {
+  background-color: var(--hover-background);
 }
 
 .file-list li:last-child {
@@ -328,11 +333,12 @@ button:disabled {
 }
 
 .directory-header {
-  padding: 0.5rem;
-  background-color: #f1f5f9;
+  padding: 0.75rem;
+  background-color: var(--hover-background);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  border-radius: 4px;
 }
 
 .directory-title {
@@ -365,9 +371,10 @@ button:disabled {
 }
 
 .directory-files {
-  padding-left: 1.5rem;
+  padding: 0.5rem 0.5rem 0.5rem 2rem;
   max-height: 120px;
   overflow: auto;
+  background-color: var(--background);
 }
 .directory-files::-webkit-scrollbar,
 .directory-list::-webkit-scrollbar {
