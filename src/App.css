@@ -334,11 +334,12 @@ button:disabled {
 
 .directory-header {
   padding: 0.75rem;
-  background-color: var(--hover-background);
+  background-color: var(--card-background);
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-radius: 4px;
+  border: 1px solid var(--border-color);
 }
 
 .directory-title {
@@ -367,7 +368,7 @@ button:disabled {
 }
 
 .directory-header:hover {
-  background-color: #e2e8f0;
+  background-color: var(--hover-background);
 }
 
 .directory-files {
