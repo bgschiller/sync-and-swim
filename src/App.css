@@ -100,7 +100,7 @@ button {
     background-color: #0f0f0f69;
   }
 }
-:root[data-theme="light"] {
+:root {
   --primary-color: #2563eb;
   --primary-hover: #1d4ed8;
   --background: #f8fafc;
@@ -112,16 +112,18 @@ button {
   --footer-background: #ffffff;
 }
 
-:root[data-theme="dark"] {
-  --primary-color: #60a5fa;
-  --primary-hover: #3b82f6;
-  --background: #1e293b;
-  --text-color: #f1f5f9;
-  --border-color: #334155;
-  --card-background: #0f172a;
-  --hover-background: #334155;
-  --secondary-text: #94a3b8;
-  --footer-background: #0f172a;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary-color: #60a5fa;
+    --primary-hover: #3b82f6;
+    --background: #1e293b;
+    --text-color: #f1f5f9;
+    --border-color: #334155;
+    --card-background: #0f172a;
+    --hover-background: #334155;
+    --secondary-text: #94a3b8;
+    --footer-background: #0f172a;
+  }
 }
 
 body {
@@ -221,22 +223,6 @@ body {
   align-items: center;
 }
 
-.theme-toggle {
-  background: transparent;
-  border: 1px solid var(--border-color);
-  padding: 0.5rem;
-  cursor: pointer;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.theme-toggle:hover {
-  background: var(--hover-background);
-}
 .footer > * {
   margin-right: 1rem;
   margin-left: 1rem;

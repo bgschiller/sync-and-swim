@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import "./App.css";
 import Menu from "./components/Menu";
 import FileTransfer from "./components/FileTransfer";
@@ -90,18 +89,15 @@ function AppContent() {
                   Brian Schiller
                 </a>
               </span>
-              <div className="footer-links">
-                <a
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigateTo(menuOptions[0]); // About is first option
-                  }}
-                >
-                  About this app
-                </a>
-                <ThemeToggle />
-              </div>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigateTo(menuOptions[0]); // About is first option
+                }}
+              >
+                About this app
+              </a>
             </footer>
           </div>
         )}
@@ -110,25 +106,8 @@ function AppContent() {
   );
 }
 
-function ThemeToggle() {
-  const { theme, toggleTheme } = useTheme();
-  return (
-    <button 
-      onClick={toggleTheme}
-      className="theme-toggle"
-      aria-label="Toggle theme"
-    >
-      {theme === 'light' ? '🌙' : '☀️'}
-    </button>
-  );
-}
-
 function App() {
-  return (
-    <ThemeProvider>
-      <AppContent />
-    </ThemeProvider>
-  );
+  return <AppContent />;
 }
 
 export default App;
