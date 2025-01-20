@@ -1,5 +1,9 @@
 import { open } from "@tauri-apps/plugin-shell";
 
+declare global {
+  const __APP_VERSION__: string;
+}
+
 export default function About() {
   return (
     <div className="about-page">
@@ -35,7 +39,7 @@ export default function About() {
         >
           GitHub
         </a>
-        .
+        . This is version {__APP_VERSION__}.
       </p>
     </div>
   );

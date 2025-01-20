@@ -2,6 +2,10 @@
 
 An app for loading Shokz OpenSwim headphones with music and audiobooks.
 
+## How to install
+
+Download the latest release from the [releases page](https://github.com/bgschiller/sync-and-swim/releases). There are installers for Mac, Windows, and Linux.
+
 ## How to use the app
 
 ![Sync and Swim main screen](./images/sync-and-swim-main.png)
