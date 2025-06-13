@@ -1,5 +1,9 @@
 # Sync + Swim Changelog
 
+## 0.0.3
+
+- Added support for finding ffmpeg in common locations
+
 ## 0.0.2
 
 - Added support for dark mode

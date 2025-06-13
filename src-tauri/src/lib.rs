@@ -1,3 +1,4 @@
+use log::{error, info};
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::fs;
@@ -6,6 +7,7 @@ use std::path::PathBuf;
 use tauri::Emitter;
 use tauri_plugin_shell::ShellExt;
 mod audio_segment;
+mod find_ffmpeg;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct AudioFile {
@@ -122,14 +124,24 @@ async fn delete_files(files: Vec<AudioFile>) -> Result<(), String> {
 #[tauri::command]
 async fn check_ffmpeg(app: tauri::AppHandle) -> Result<bool, String> {
     let shell = app.shell();
-    let output = shell
-        .command("which")
-        .args(["ffmpeg"])
-        .output()
-        .await
-        .unwrap();
 
-    Ok(output.status.success())
+    // Log the PATH environment variable
+    if let Ok(path) = env::var("PATH") {
+        info!("Current PATH: {}", path);
+    } else {
+        error!("PATH environment variable not found");
+    }
+
+    match find_ffmpeg::find_ffmpeg(shell).await {
+        Some(path) => {
+            info!("Found ffmpeg at: {}", path.display());
+            Ok(true)
+        }
+        None => {
+            error!("FFmpeg not found in PATH or common locations");
+            Ok(false)
+        }
+    }
 }
 
 #[tauri::command]

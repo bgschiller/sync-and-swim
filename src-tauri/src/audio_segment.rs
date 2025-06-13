@@ -1,3 +1,4 @@
+use crate::find_ffmpeg;
 use anyhow::{Context, Result};
 use regex::Regex;
 use std::fs;
@@ -20,10 +21,17 @@ async fn silence_points(
     input_filename: &str,
     silence_duration_seconds: f64,
 ) -> Result<Vec<f64>> {
+    // Get ffmpeg path
+    let ffmpeg_path = find_ffmpeg::find_ffmpeg(app.shell())
+        .await
+        .context("FFmpeg not found")?
+        .to_string_lossy()
+        .to_string();
+
     // Run ffmpeg command with output capture using shell plugin
     let shell = app.shell();
     let output = shell
-        .command("ffmpeg")
+        .command(&ffmpeg_path)
         .args([
             "-i",
             input_filename,
@@ -54,11 +62,22 @@ async fn silence_points(
     Ok(silences)
 }
 
-fn audio_file_duration(app: &tauri::AppHandle, input_filename: &str) -> Result<f64> {
+async fn audio_file_duration(app: &tauri::AppHandle, input_filename: &str) -> Result<f64> {
+    // Get ffprobe path (assuming it's in the same directory as ffmpeg)
+    let ffmpeg_path = find_ffmpeg::find_ffmpeg(app.shell())
+        .await
+        .context("FFmpeg not found")?;
+    let ffprobe_path = ffmpeg_path
+        .parent()
+        .context("Could not get parent directory")?
+        .join("ffprobe")
+        .to_string_lossy()
+        .to_string();
+
     let shell = app.shell();
     let output = tauri::async_runtime::block_on(async move {
         shell
-            .command("ffprobe")
+            .command(&ffprobe_path)
             .args([
                 "-v",
                 "error",
@@ -133,7 +152,7 @@ async fn split_points(
         let silences = silence_points(app, input_filename, 1.0).await?;
         Ok(split_at_silences(silences, segment_time))
     } else {
-        let duration = audio_file_duration(app, input_filename)?;
+        let duration = audio_file_duration(app, input_filename).await?;
 
         let num_segments = (duration / segment_time as f64).ceil() as i32;
         let split_points = (1..num_segments)
@@ -176,9 +195,16 @@ pub async fn segment_audio(
     let splits = split_points(app, input_filename, segment_time, cut_at_silence).await?;
     let split_counts = splits.len();
 
+    // Get ffmpeg path
+    let ffmpeg_path = find_ffmpeg::find_ffmpeg(app.shell())
+        .await
+        .context("FFmpeg not found")?
+        .to_string_lossy()
+        .to_string();
+
     let shell = app.shell();
     let (mut events, _cmd) = shell
-        .command("ffmpeg")
+        .command(&ffmpeg_path)
         .args([
             "-i",
             input_filename,
