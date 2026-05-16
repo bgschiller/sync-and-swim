@@ -141,44 +141,47 @@ function FileTransfer() {
             <li>
               Choose a folder on your computer with the audio files you want to
               transfer.
-              <FileChoice
-                label="Source Folder"
-                value={sourceDir}
-                onChange={async (path) => {
-                  setSourceDir(path);
-                  const audioFiles = await invoke<AudioFile[]>(
-                    "list_audio_files",
-                    {
-                      path,
-                    }
-                  );
-                  setFiles(audioFiles);
-                }}
-                storageKey="filetransfer_source_folder" // Add storageKey prop
-              />
-            </li>
-            <li>
-              Choose the folder for your headphones (it's probably named
-              something like "/Volumes/OpenSwim")
-              <FileChoice
-                label="Destination Folder"
-                value={destDir}
-                onChange={async (path) => {
-                  setDestDir(path);
-                  if (path) {
-                    const existingFiles = await invoke<AudioFile[]>(
-                      "deep_list_files",
+              <div className="controls-file-choice">
+                <FileChoice
+                  label="Source Folder"
+                  value={sourceDir}
+                  onChange={async (path) => {
+                    setSourceDir(path);
+                    const audioFiles = await invoke<AudioFile[]>(
+                      "list_audio_files",
                       {
                         path,
                       }
                     );
-                    setExistingFileCount(existingFiles.length);
-                  } else {
-                    setExistingFileCount(0);
-                  }
-                }}
-                storageKey="filetransfer_dest_folder" // Add storageKey prop
-              />
+                    setFiles(audioFiles);
+                  }}
+                  storageKey="filetransfer_source_folder" // Add storageKey prop
+                />
+              </div>
+            </li>
+            <li>
+              Choose the folder for your headphones
+              <div className="controls-file-choice">
+                <FileChoice
+                  label="Destination Folder"
+                  value={destDir}
+                  onChange={async (path) => {
+                    setDestDir(path);
+                    if (path) {
+                      const existingFiles = await invoke<AudioFile[]>(
+                        "deep_list_files",
+                        {
+                          path,
+                        }
+                      );
+                      setExistingFileCount(existingFiles.length);
+                    } else {
+                      setExistingFileCount(0);
+                    }
+                  }}
+                  storageKey="filetransfer_dest_folder" // Add storageKey prop
+                />
+              </div>
             </li>
             <li>
               Choose whether to

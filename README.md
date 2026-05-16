@@ -35,6 +35,8 @@ With only three buttons and no screen, there's no function on the OpenSwim headp
 This function of the app allows you to cut audio files into smaller pieces. There's a slight stutter when the headphones switch from one file to the next, but the app will try to identify silent points in the audio and cut there.
 
 > Note: This function requires that [ffmpeg](https://www.ffmpeg.org/download.html) is installed and available on your PATH. You'll see an error message if it can't be found.
+>  
+> On Windows, it's easiest to just run `winget install FFmpeg` in a Command Prompt or Powershell window, no extra setup needed.
 
 ### Find your place
 
@@ -46,24 +48,6 @@ Once you've found the earliest-not-yet-completed file, you can optionally delete
 
 This works best on audiobooks that are split into smaller pieces (with the "Cut audio files" function). If you have a handful of long files, the best this will do is find the right one.
 
-## How to build
-
-This project is built using [Tauri](https://v2.tauri.app/). Follow the [Prerequisites instructions on the Tauri website](https://v2.tauri.app/start/prerequisites/) to install Rust and Node.js.
-
-Once you have those installed, run
-
-```sh
-corepack enable
-pnpm install
-pnpm tauri dev
-```
-
-This will start a hot-reloading development server. You can build the app for distribution with
-
-```sh
-pnpm tauri build
-```
-
 ## Contributing
 
 This app is a side project for no money. I'm happy to accept pull requests and even feature requests, but no promises about when they'll be integrated. Some areas where I'd love help:
@@ -73,3 +57,26 @@ This app is a side project for no money. I'm happy to accept pull requests and e
 - Use ffmpeg via an FFI instead of a child process. I couldn't figure out how to make that work, but it would be nice to lift the requirement that a user has ffmpeg installed.
 - Figure out code signing for the Mac and Windows apps. Whatever we can do (short of paying $99/year) to make the app easier to install for laypeople would be great.
 - Make it prettier. I think this design is O-kay but not great. I'm not at all bothered if you can make improvements.
+
+### How to build
+
+This project is built using [Tauri](https://v2.tauri.app/). Follow the [Prerequisites instructions on the Tauri website](https://v2.tauri.app/start/prerequisites/) to install Rust and Node.js.
+
+Once you have those installed, in any directory, with proper permissions, run the following to enable pnpm
+
+```sh
+corepack enable
+```
+
+Then in the cloned repository directory, run
+
+```sh
+pnpm install
+pnpm tauri dev
+```
+
+This will start a hot-reloading development server. You can build the app for distribution with
+
+```sh
+pnpm tauri build
+```

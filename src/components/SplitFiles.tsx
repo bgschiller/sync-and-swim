@@ -82,30 +82,34 @@ function SplitFiles() {
           <ol className="controls">
             <li>
               Choose a folder with the long audio files you want to split.
-              <FileChoice
-                label="Source Folder"
-                value={sourceDir}
-                onChange={async (path) => {
-                  setSourceDir(path);
-                  const audioFiles = await invoke<AudioFile[]>(
-                    "list_audio_files",
-                    {
-                      path,
-                    }
-                  );
-                  setFiles(audioFiles);
-                }}
-                storageKey="splitfiles_source_folder" // Add storageKey prop
-              />
+              <div className="controls-file-choice">
+                <FileChoice
+                  label="Source Folder"
+                  value={sourceDir}
+                  onChange={async (path) => {
+                    setSourceDir(path);
+                    const audioFiles = await invoke<AudioFile[]>(
+                      "list_audio_files",
+                      {
+                        path,
+                      }
+                    );
+                    setFiles(audioFiles);
+                  }}
+                  storageKey="splitfiles_source_folder" // Add storageKey prop
+                />
+              </div>
             </li>
             <li>
               Choose where to save the split files
-              <FileChoice
-                label="Destination Folder"
-                value={destDir}
-                onChange={(path) => setDestDir(path)}
-                storageKey="splitfiles_dest_folder" // Add storageKey prop
-              />
+              <div className="controls-file-choice">
+                <FileChoice
+                  label="Destination Folder"
+                  value={destDir}
+                  onChange={(path) => setDestDir(path)}
+                  storageKey="splitfiles_dest_folder" // Add storageKey prop
+                />
+              </div>
             </li>
             <li>
               Set the maximum length for each chunk

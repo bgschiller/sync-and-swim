@@ -25,7 +25,7 @@ const menuOptions = [
     id: "split",
     title: "Cut Audio into Smaller Pieces",
     description:
-      "Split audiobooks or podcasts into shorter pieces. This makes it easier to skip forward and backward just a bit without a screen",
+      "Split audiobooks or podcasts into shorter pieces. This makes it easier to skip forward and backward just a bit without a screen.",
     component: SplitFiles,
   },
   {
