@@ -1,5 +1,11 @@
 # Sync + Swim Changelog
 
+## 0.0.4
+
+- Better support for finding ffmpeg on Windows
+- Keep content from flowing under the scrollable list of files (see [#2](https://github.com/bgschiller/sync-and-swim/issues/2))
+  Thanks to [Kieran McWilliams](https://github.com/Maxmaxs5) for these fixes!
+
 ## 0.0.3
 
 - Added support for finding ffmpeg in common locations
