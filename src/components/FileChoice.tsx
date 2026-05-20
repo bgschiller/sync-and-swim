@@ -11,6 +11,9 @@ interface FileChoiceProps {
 
 function abbreviatePath(path: string): string {
   // Replace home directory with ~
+  if (path.startsWith("C:\\Users\\")) {
+    path = path.replace(/^C:\\Users\\[^\\]+/, "~");
+  }
   if (path.startsWith("/Users/")) {
     path = path.replace(/^\/Users\/[^/]+/, "~");
   }

@@ -17,14 +17,14 @@
 .file-choice-value {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  // Ellipsis overflow if ever desired again, removed in favor of multi-line wrap due to space constraints and better to see the whole path
+  //overflow: hidden;
+  //text-overflow: ellipsis;
+  //white-space: nowrap;
 }
 
 .file-choice-button {
   padding: 0.5rem;
-  line-height: 1;
 }
 
 .file-choice-placeholder {

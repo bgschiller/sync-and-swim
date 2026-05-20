@@ -54,7 +54,14 @@
 }
 
 .controls li {
+  max-width: 100%;
   margin-bottom: 20px;
+}
+
+.controls li .controls-file-choice {
+  display: flex;
+  max-width: 100%;
+  width: fit-content;
 }
 
 .file-progress {
