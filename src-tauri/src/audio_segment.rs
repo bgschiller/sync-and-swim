@@ -5,6 +5,7 @@ use std::fs;
 use std::path::Path;
 use tauri::{Emitter, Manager, Window};
 use tauri_plugin_shell::process::CommandEvent;
+use log;
 use tauri_plugin_shell::ShellExt;
 
 #[derive(Clone, serde::Serialize)]
@@ -28,33 +29,43 @@ async fn silence_points(
         .to_string_lossy()
         .to_string();
 
+    let silence_filter = format!("silencedetect=n=-30dB:d={}", silence_duration_seconds);
+    log::info!(
+        "silence detection: running ffmpeg -i {} -af {} -f null -",
+        input_filename,
+        silence_filter
+    );
+
     // Run ffmpeg command with output capture using shell plugin
     let shell = app.shell();
     let output = shell
         .command(&ffmpeg_path)
-        .args([
-            "-i",
-            input_filename,
-            "-af",
-            &format!("silencedetect=n=-30dB:d={}", silence_duration_seconds),
-            "-f",
-            "null",
-            "-",
-        ])
+        .args(["-i", input_filename, "-af", &silence_filter, "-f", "null", "-"])
         .output()
         .await
-        .context("Failed to execute ffmpeg")?;
+        .context("silence detection: failed to execute ffmpeg process")?;
+
+    let stderr =
+        String::from_utf8(output.stderr.clone()).context("silence detection: ffmpeg output was not valid UTF-8")?;
+
+    if !output.status.success() {
+        log::error!("silence detection: ffmpeg failed with stderr:\n{}", stderr);
+        return Err(anyhow::anyhow!(
+            "silence detection: ffmpeg exited with error:\n{}",
+            stderr
+        ));
+    }
+
+    log::info!("silence detection: ffmpeg completed successfully");
 
     // Parse ffmpeg output to get split points
-    let output =
-        String::from_utf8(output.stderr.clone()).context("Failed to parse ffmpeg output")?;
     let mut silences = Vec::new();
-    for line in output.lines() {
+    for line in stderr.lines() {
         if let Some(start) = line.find("silence_start:") {
             let start = line[start + 14..].trim();
             let start = start
                 .parse::<f64>()
-                .context("Failed to parse split point")?;
+                .context(format!("silence detection: failed to parse split point from line: {}", line))?;
             silences.push(start);
         }
     }
@@ -74,6 +85,11 @@ async fn audio_file_duration(app: &tauri::AppHandle, input_filename: &str) -> Re
         .to_string_lossy()
         .to_string();
 
+    log::info!(
+        "duration check: running ffprobe -v error -show_entries format=duration on {}",
+        input_filename
+    );
+
     let shell = app.shell();
     let output = tauri::async_runtime::block_on(async move {
         shell
@@ -89,16 +105,26 @@ async fn audio_file_duration(app: &tauri::AppHandle, input_filename: &str) -> Re
             ])
             .output()
             .await
-            .context("Failed to execute ffprobe")
+            .context("duration check: failed to execute ffprobe")
     })?;
 
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        log::error!("duration check: ffprobe failed with stderr:\n{}", stderr);
+        return Err(anyhow::anyhow!(
+            "duration check: ffprobe exited with error:\n{}",
+            stderr
+        ));
+    }
+
     let duration =
-        String::from_utf8(output.stdout.clone()).context("Failed to parse ffprobe output")?;
+        String::from_utf8(output.stdout.clone()).context("duration check: failed to parse ffprobe output")?;
     let duration = duration
         .trim()
         .parse::<f64>()
-        .context("Failed to parse duration")?;
+        .context("duration check: failed to parse duration value")?;
 
+    log::info!("duration check: file duration is {}s", duration);
     Ok(duration)
 }
 
@@ -148,6 +174,12 @@ async fn split_points(
     segment_time: i32,
     cut_at_silence: bool,
 ) -> Result<Vec<f64>> {
+    log::info!(
+        "split_points: processing {} with segment_time={}s, cut_at_silence={}",
+        input_filename,
+        segment_time,
+        cut_at_silence
+    );
     if cut_at_silence {
         let silences = silence_points(app, input_filename, 1.0).await?;
         Ok(split_at_silences(silences, segment_time))
@@ -203,6 +235,18 @@ pub async fn segment_audio(
         .to_string();
 
     let shell = app.shell();
+    let segment_times_str = splits
+        .iter()
+        .map(|s| s.to_string())
+        .collect::<Vec<_>>()
+        .join(",");
+    log::info!(
+        "audio segmenting: running ffmpeg -i {} -f segment -segment_times {} -c copy {}",
+        input_filename,
+        segment_times_str,
+        output_pattern
+    );
+
     let (mut events, _cmd) = shell
         .command(&ffmpeg_path)
         .args([
@@ -211,11 +255,7 @@ pub async fn segment_audio(
             "-f",
             "segment",
             "-segment_times",
-            &splits
-                .iter()
-                .map(|s| s.to_string())
-                .collect::<Vec<_>>()
-                .join(","),
+            &segment_times_str,
             "-c",
             "copy",
             &output_pattern,
@@ -238,11 +278,13 @@ pub async fn segment_audio(
 
     let win = window.clone();
     let fname = file_name.clone();
+    let mut stderr_lines: Vec<String> = Vec::new();
     // Process events from the command
     while let Some(event) = events.recv().await {
         match event {
             CommandEvent::Stderr(line) => {
                 let line = String::from_utf8(line).expect("line wasn't utf8");
+                stderr_lines.push(line.clone());
                 // Look for the input file line that indicates processing has started
                 if line.contains("Input #0") {
                     win.emit(
@@ -287,8 +329,19 @@ pub async fn segment_audio(
             }
             CommandEvent::Terminated(status) => {
                 if !status.code.unwrap_or(-1).eq(&0) {
-                    return Err(anyhow::anyhow!("ffmpeg command failed"));
+                    let stderr_output = stderr_lines.join("\n");
+                    log::error!(
+                        "audio segmenting: ffmpeg failed for {} with stderr:\n{}",
+                        fname,
+                        stderr_output
+                    );
+                    return Err(anyhow::anyhow!(
+                        "audio segmenting: ffmpeg exited with code {:?}:\n{}",
+                        status.code,
+                        stderr_output
+                    ));
                 }
+                log::info!("audio segmenting: ffmpeg completed successfully for {}", fname);
                 win.emit(
                     "segment-progress",
                     SegmentProgress {

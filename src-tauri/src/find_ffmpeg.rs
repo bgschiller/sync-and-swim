@@ -13,6 +13,8 @@ const COMMON_PATHS: &[&str] = &[
     "/opt/homebrew/opt/ffmpeg/bin",            // Homebrew Apple Silicon
     "/Applications/ffmpeg.app/Contents/MacOS", // macOS app bundle
     "C:\\ffmpeg\\bin",                         // Windows location sometimes suggested
+    "C:\\Program Files\\ffmpeg\\bin",          // Windows (winget / Gyan.FFmpeg)
+    "C:\\Program Files (x86)\\ffmpeg\\bin",    // Windows 32-bit ffmpeg
 ];
 
 /// Checks if a path points to an executable ffmpeg
