@@ -1,5 +1,12 @@
 # Sync + Swim Changelog
 
+## 0.0.5
+
+- Surface FFmpeg stderr output in error messages instead of generic 'command failed'
+- Log all FFmpeg commands and output to the app log file
+- Prefix errors with step name (silence detection / duration check / audio segmenting)
+- Add winget/Gyan.FFmpeg install paths to Windows search
+
 ## 0.0.4
 
 - Better support for finding ffmpeg on Windows
