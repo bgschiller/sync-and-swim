@@ -227,6 +227,36 @@ pub async fn segment_audio(
     let splits = split_points(app, input_filename, segment_time, cut_at_silence).await?;
     let split_counts = splits.len();
 
+    // If there are no split points (e.g. the file is shorter than one chunk),
+    // ffmpeg's segment muxer rejects an empty `-segment_times` list. Instead,
+    // copy the file through to the destination as a single segment.
+    if split_counts == 0 {
+        log::info!(
+            "audio segmenting: {} has no split points; copying as a single segment",
+            input_filename
+        );
+        let dest = format!("{}/{}_part_0000.mp3", output_folder, input_name);
+        fs::copy(input_filename, &dest).with_context(|| {
+            format!(
+                "audio segmenting: failed to copy {} to {}",
+                input_filename, dest
+            )
+        })?;
+        window
+            .emit(
+                "segment-progress",
+                SegmentProgress {
+                    file_name,
+                    progress: 100.0,
+                    completed: true,
+                    index,
+                    total,
+                },
+            )
+            .context("Failed to emit completion")?;
+        return Ok(());
+    }
+
     // Get ffmpeg path
     let ffmpeg_path = find_ffmpeg::find_ffmpeg(app.shell())
         .await
