@@ -113,10 +113,15 @@ function FileTransfer() {
 
       // Refresh existing file count after transfer
       if (destDir) {
-        const existingFiles = await invoke<AudioFile[]>("deep_list_files", {
-          path: destDir,
-        });
-        setExistingFileCount(existingFiles.length);
+        try {
+          const existingFiles = await invoke<AudioFile[]>("deep_list_files", {
+            path: destDir,
+          });
+          setExistingFileCount(existingFiles.length);
+        } catch (error) {
+          console.error("Failed to list destination files:", error);
+          setExistingFileCount(0);
+        }
       }
     }
   }
@@ -168,13 +173,18 @@ function FileTransfer() {
                   onChange={async (path) => {
                     setDestDir(path);
                     if (path) {
-                      const existingFiles = await invoke<AudioFile[]>(
-                        "deep_list_files",
-                        {
-                          path,
-                        }
-                      );
-                      setExistingFileCount(existingFiles.length);
+                      try {
+                        const existingFiles = await invoke<AudioFile[]>(
+                          "deep_list_files",
+                          {
+                            path,
+                          }
+                        );
+                        setExistingFileCount(existingFiles.length);
+                      } catch (error) {
+                        console.error("Failed to list destination files:", error);
+                        setExistingFileCount(0);
+                      }
                     } else {
                       setExistingFileCount(0);
                     }

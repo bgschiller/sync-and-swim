@@ -34,9 +34,16 @@ fn is_audio_file(name: &str) -> bool {
     }
 }
 
+fn is_hidden(name: &str) -> bool {
+    name.starts_with('.')
+}
+
 #[cfg(test)]
 mod tests {
     use super::is_audio_file;
+    use super::is_hidden;
+    use super::visit_dirs;
+    use std::fs;
 
     #[test]
     fn detects_audio_files_case_insensitively() {
@@ -53,6 +60,38 @@ mod tests {
         assert!(!is_audio_file("cover.jpg"));
         assert!(!is_audio_file("README"));
     }
+
+    #[test]
+    fn treats_dotfiles_as_hidden() {
+        assert!(is_hidden(".DS_Store"));
+        assert!(is_hidden(".Spotlight-V100"));
+        assert!(!is_hidden("book.mp3"));
+    }
+
+    #[test]
+    fn visit_dirs_lists_only_audio_files_and_skips_hidden_entries() {
+        let base = std::env::temp_dir().join(format!(
+            "sync_and_swim_test_{}",
+            std::process::id()
+        ));
+        let _ = fs::remove_dir_all(&base);
+        fs::create_dir_all(base.join("sub")).unwrap();
+        fs::create_dir_all(base.join(".Spotlight-V100")).unwrap();
+
+        fs::write(base.join("book.mp3"), b"x").unwrap();
+        fs::write(base.join("cover.jpg"), b"x").unwrap();
+        fs::write(base.join(".DS_Store"), b"x").unwrap();
+        fs::write(base.join("sub").join("chapter.m4b"), b"x").unwrap();
+        fs::write(base.join(".Spotlight-V100").join("store.db"), b"x").unwrap();
+
+        let result = visit_dirs(&base, &base).unwrap();
+        let mut names: Vec<String> = result.iter().map(|f| f.name.clone()).collect();
+        names.sort();
+
+        assert_eq!(names, vec!["book.mp3".to_string(), "chapter.m4b".to_string()]);
+
+        let _ = fs::remove_dir_all(&base);
+    }
 }
 
 fn visit_dirs(dir: &PathBuf, base_path: &PathBuf) -> Result<Vec<AudioFile>, String> {
@@ -63,14 +102,20 @@ fn visit_dirs(dir: &PathBuf, base_path: &PathBuf) -> Result<Vec<AudioFile>, Stri
             let entry = entry.map_err(|e| e.to_string())?;
             let path = entry.path();
 
+            // Skip macOS system files/directories and other hidden entries
+            // (.DS_Store, .Spotlight-V100, .Trashes, .fseventsd, ...). Some of
+            // these are root-owned and unreadable, which would otherwise make
+            // the whole listing fail with "Permission denied".
+            if let Some(name) = entry.file_name().to_str() {
+                if is_hidden(name) {
+                    continue;
+                }
+            }
+
             if path.is_dir() {
                 files.extend(visit_dirs(&path, base_path)?);
             } else if path.is_file() {
                 if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-                    // Skip .DS_Store files
-                    if name == ".DS_Store" {
-                        continue;
-                    }
                     // Skip non-audio files (e.g. Libby manifest.json)
                     if !is_audio_file(name) {
                         continue;
@@ -114,7 +159,7 @@ async fn shallow_list_files(path: &str) -> Result<Vec<AudioFile>, String> {
 
             if path.is_file() {
                 if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-                    if name == ".DS_Store" {
+                    if is_hidden(name) {
                         continue;
                     }
                     // Skip non-audio files (e.g. Libby manifest.json)
@@ -244,16 +289,26 @@ async fn copy_files(
     mode: &str,
     window: tauri::Window,
 ) -> Result<(), String> {
-    // Delete destination directory if mode is "replace"
+    let dest_dir = PathBuf::from(dest_path);
+
+    // Delete existing audio files if mode is "replace"
     if mode == "replace" {
-        if let Err(e) = fs::remove_dir_all(dest_path) {
-            // Ignore if directory doesn't exist
-            if e.kind() != std::io::ErrorKind::NotFound {
-                return Err(e.to_string());
+        // Only remove the audio files we already report in the UI's "N files
+        // will be removed" count, rather than nuking the whole directory.
+        // remove_dir_all fails with "Operation not permitted" on removable
+        // volumes (e.g. Shokz headphones) because macOS creates protected
+        // metadata like .DS_Store, .Spotlight-V100, .fseventsd, and .Trashes
+        // inside them, which can't always be removed.
+        if dest_dir.exists() {
+            let existing = visit_dirs(&dest_dir, &dest_dir)?;
+            for file in existing {
+                remove_file(&file.path)
+                    .map_err(|e| format!("Failed to delete {}: {}", file.name, e))?;
             }
         }
-        fs::create_dir_all(dest_path).map_err(|e| e.to_string())?;
     }
+
+    fs::create_dir_all(&dest_dir).map_err(|e| e.to_string())?;
 
     let total = files.len();
 
@@ -273,7 +328,7 @@ async fn copy_files(
 
         // Perform the blocking copy
         let src_path = PathBuf::from(&file.path);
-        let mut dest_file = PathBuf::from(dest_path);
+        let mut dest_file = dest_dir.clone();
 
         // Create subdirectory if relative_path is not empty
         if !file.relative_path.is_empty() {
