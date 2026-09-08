@@ -24,6 +24,37 @@ pub struct CopyProgress {
     total: usize,
 }
 
+fn is_audio_file(name: &str) -> bool {
+    const AUDIO_EXTENSIONS: &[&str] = &[
+        "mp3", "m4a", "m4b", "aac", "wav", "wma", "flac", "ogg", "opus", "aiff", "aif",
+    ];
+    match name.rsplit('.').next() {
+        Some(ext) => AUDIO_EXTENSIONS.iter().any(|e| e.eq_ignore_ascii_case(ext)),
+        None => false,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_audio_file;
+
+    #[test]
+    fn detects_audio_files_case_insensitively() {
+        assert!(is_audio_file("book.mp3"));
+        assert!(is_audio_file("book.MP3"));
+        assert!(is_audio_file("book.m4b"));
+        assert!(is_audio_file("track.flac"));
+    }
+
+    #[test]
+    fn rejects_non_audio_files() {
+        assert!(!is_audio_file("book-manifest.json"));
+        assert!(!is_audio_file(".DS_Store"));
+        assert!(!is_audio_file("cover.jpg"));
+        assert!(!is_audio_file("README"));
+    }
+}
+
 fn visit_dirs(dir: &PathBuf, base_path: &PathBuf) -> Result<Vec<AudioFile>, String> {
     let mut files = Vec::new();
 
@@ -38,6 +69,10 @@ fn visit_dirs(dir: &PathBuf, base_path: &PathBuf) -> Result<Vec<AudioFile>, Stri
                 if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
                     // Skip .DS_Store files
                     if name == ".DS_Store" {
+                        continue;
+                    }
+                    // Skip non-audio files (e.g. Libby manifest.json)
+                    if !is_audio_file(name) {
                         continue;
                     }
                     // Get the relative path by stripping the base path
@@ -80,6 +115,10 @@ async fn shallow_list_files(path: &str) -> Result<Vec<AudioFile>, String> {
             if path.is_file() {
                 if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
                     if name == ".DS_Store" {
+                        continue;
+                    }
+                    // Skip non-audio files (e.g. Libby manifest.json)
+                    if !is_audio_file(name) {
                         continue;
                     }
                     files.push(AudioFile {

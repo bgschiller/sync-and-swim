@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fix splitting audio files that are shorter than one chunk (they previously failed with an ffmpeg "Empty time specification in times list" error)
+- Only list audio files, skipping non-audio files such as Libby's manifest.json
 
 ## 0.0.5
 
